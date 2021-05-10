@@ -10,16 +10,24 @@ pytestmark = pytest.mark.asyncio
 
 
 @pytest.fixture
-def new_tickers():
-    return SecurityCreate(tickers=["AMZN", "AAPL"])
+def test_tickers():
+    return ["AMZN", "AAPL"]
+
+@pytest.fixture
+def test_tickers2():
+    return ["JNJ", "TSLA"]
+
+@pytest.fixture
+def test_tickers3():
+    return ["AMZN", "GOOGL"]
 
 @pytest.fixture
 def ticker_list():
     return ["AMZN", "AAPL"]
 
 class TestTickersRoutes:
-    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, new_tickers: SecurityCreate) -> None:
-        res = await client.post(app.url_path_for("securities:add-tickers"), json=new_tickers.dict())
+    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, test_tickers) -> None:
+        res = await client.post(app.url_path_for("securities:add-tickers"), json=test_tickers)
         assert res.status_code != HTTP_404_NOT_FOUND
 
     async def test_invalid_input_raises_error(self, app: FastAPI, client: AsyncClient) -> None:
@@ -28,14 +36,29 @@ class TestTickersRoutes:
 
 
 class TestCreateTicker:
-    async def test_valid_input_creates_ticker(
-            self, app: FastAPI, client: AsyncClient, new_tickers: SecurityCreate
-    ) -> None:
-        res = await client.post(app.url_path_for("securities:add-tickers"), json=new_tickers.dict())
+    async def test_valid_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers2) -> None:
+        res = await client.post(app.url_path_for("securities:add-tickers"), json=test_tickers2)
         assert res.status_code == HTTP_201_CREATED
 
-        created_ticker = SecurityCreate(tickers=list(res.json().keys()))
-        assert created_ticker == new_tickers
+        created_ticker = [ticker['ticker'] for ticker in res.json()]
+        assert created_ticker == test_tickers2
+
+    async def test_repeated_input_returns_empty_list(self, app: FastAPI, client: AsyncClient, test_tickers2) -> None:
+        # If tickers are already in db, API should return empty list.
+        res = await client.post(app.url_path_for("securities:add-tickers"), json=test_tickers2)
+        assert res.status_code == HTTP_201_CREATED
+
+        created_ticker = [ticker['ticker'] for ticker in res.json()]
+        assert created_ticker == []
+
+    async def test_partial_repeated_input_returns_partial_creation(self, app: FastAPI, client: AsyncClient,
+                                                                   test_tickers3) -> None:
+        # If part of tickers already in db, API should return only newly created tickers not previously in db
+        res = await client.post(app.url_path_for("securities:add-tickers"), json=test_tickers3)
+        assert res.status_code == HTTP_201_CREATED
+
+        created_ticker = [ticker['ticker'] for ticker in res.json()]
+        assert created_ticker == [test_tickers3[1]]
 
     @pytest.mark.parametrize(
         "invalid_payload, status_code",
