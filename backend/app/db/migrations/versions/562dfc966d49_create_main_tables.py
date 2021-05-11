@@ -65,8 +65,7 @@ def timestamps(indexed: bool = False) -> Tuple[sa.Column, sa.Column]:
 def create_securities_table() -> None:
     op.create_table(
         "securities",
-        sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("ticker", sa.Text, nullable=False, index=True),
+        sa.Column("ticker", sa.Text, primary_key=True, nullable=False, index=True),
         sa.Column("type", sa.Text, nullable=False),
         *timestamps(),
     )
@@ -83,11 +82,9 @@ def create_securities_table() -> None:
 def create_equities_table() -> None:
     op.create_table(
         "equities",
-        sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("ticker", sa.Text, nullable=False, index=True),
+        sa.Column("ticker", sa.Text, primary_key=True, nullable=False, index=True),
         sa.Column("name", sa.Text, nullable=True),
         sa.Column("country", sa.Text, nullable=True),
-        sa.Column("summary", sa.Text, nullable=True),
         sa.Column("sector", sa.Text, nullable=True),
         sa.Column("industry", sa.Text, nullable=True),
         sa.Column("exchange", sa.Text, nullable=True),
