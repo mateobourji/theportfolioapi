@@ -3,24 +3,26 @@ from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
 from app.db.repositories.base import BaseRepository
 from app.models.cleaning import CleaningCreate, CleaningUpdate, CleaningInDB
-from app.models.security import EquityCreate, EquityInDB, SecurityInDB
+from app.models.security import EquityCreate, EquityInDB, SecurityInDB, SecuritiesAddedToDB, InvalidTickers, \
+    SecuritiesAlreadyInDB, POSTTickerResponse
 import pdb
 import yfinance as yf
+import numpy as np
 
 ADD_EQUITY_QUERY = """
-    INSERT INTO equities (ticker, name, country, summary, sector, industry, exchange)
-    VALUES (:ticker, :name, :country, :summary, :sector, :industry, :exchange)
-    RETURNING id, ticker, name, country, summary, sector, industry, exchange;
+    INSERT INTO equities (ticker, name, country, sector, industry, exchange)
+    VALUES (:ticker, :name, :country, :sector, :industry, :exchange)
+    RETURNING ticker, name, country, sector, industry, exchange;
 """
 
 GET_SECURITIES_QUERY = """
-    SELECT id, ticker, type 
+    SELECT ticker, type 
     FROM securities
     WHERE ticker = ANY(:tickers);
     """
 
 GET_ALL_SECURITIES_QUERY = """
-    SELECT id, ticker, type
+    SELECT ticker, type
     FROM securities;
     """
 
@@ -30,36 +32,37 @@ class SecuritiesRepository(BaseRepository):
     All database actions associated with the Ticker resource
     """
 
-    async def add_tickers(self, *, new_tickers: List[str]) -> List[SecurityInDB]:
+    async def add_tickers(self, *, new_tickers: List[str]) -> POSTTickerResponse:
 
-        added_tickers = []
-        invalid_tickers = []
+        added_tickers = SecuritiesAddedToDB(securities=[])
+        invalid_tickers = InvalidTickers(tickers=[])
+        existing_tickers = SecuritiesAlreadyInDB(securities=[])
 
-        # 1. GET tickers that are already included in database
-        already_added_tickers = await self.get_securities_by_ticker(tickers=new_tickers)
-        # 2. If there are no tickers in the database (previous function call returns None), assign to empty list
-        # Otherwise, use list comprehension to get List[str] of tickers from List[SecurityInDB] returned from previous
-        # function call
-        already_added_tickers = (lambda x: [] if x is None else [t.ticker for t in x])(already_added_tickers)
-        # 3. So we can use another list comprehension to only loop/POST new tickers avoid violating unique constraint
+        # GET tickers that are already existing in database. If there are no existing tickers in the db, GET function
+        # returns None. Therefore use lambda function to replace None with empty List to satisfy data validation.
+        existing_tickers.securities = (lambda x: [] if x is None else x) \
+            (await self.get_securities_by_ticker(tickers=new_tickers))
 
-        for ticker in [tickers for tickers in new_tickers if tickers not in already_added_tickers]:
+        for ticker in list(np.setdiff1d(new_tickers, [t.ticker for t in existing_tickers.securities])):
+
             try:
                 data = yf.Ticker(ticker).info
+                quote_type = data['quoteType']
             except:
-                invalid_tickers.append(ticker)
+
+                invalid_tickers.tickers.append(ticker)
                 continue
 
-            if data['quoteType'] == 'EQUITY':
-                equity = await self._add_equity(new_equity=EquityCreate(ticker=ticker, name=data['shortName'],
-                                                                        country=data['country'],
-                                                                        summary=data['longBusinessSummary'],
-                                                                        sector=data['sector'],
-                                                                        industry=data['industry'],
-                                                                        exchange=data['exchange']))
-                added_tickers.append(SecurityInDB(**equity.dict(), type='Equity'))
+            if quote_type == 'EQUITY':
+                await self._add_equity(new_equity=EquityCreate(ticker=ticker, name=data['shortName'],
+                                                               country=data['country'],
+                                                               sector=data['sector'], industry=data['industry'],
+                                                               exchange=data['exchange']))
 
-        return added_tickers
+                added_tickers.securities.append(SecurityInDB(ticker=ticker, type='Equity'))
+
+        return POSTTickerResponse(added_tickers=added_tickers, existing_tickers=existing_tickers,
+                                  invalid_tickers=invalid_tickers)
 
     async def _add_equity(self, *, new_equity: EquityCreate) -> EquityInDB:
         query_values = new_equity.dict()
