@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
-from app.models.security import SecurityCreate, SecurityInDB
+from app.models.security import SecurityInDB, SecuritiesAddedToDB, POSTTickerResponse
 from app.models.equity import EquityCreate
 import yfinance as yf
 from app.db.repositories.securities import SecuritiesRepository
@@ -11,11 +11,10 @@ router = APIRouter()
 
 
 # TODO: return tickers that were not valid and were not added to db, and tickers that are already in db
-# Should the meat of this function be in the repository package?
-@router.post("/", name="securities:add-tickers", status_code=HTTP_201_CREATED)
-async def add_tickers(ticker_list: List[str] = Body(..., title="List of symbols"),
+@router.post("/", name="securities:add-tickers", response_model=POSTTickerResponse, status_code=HTTP_201_CREATED)
+async def add_tickers(ticker_list: List[str] = Body(..., title="List of Tickers", max_length=4),
                       tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
-                      ) -> List[SecurityInDB]:
+                      ) -> POSTTickerResponse:
 
     tickers = await tickers_repo.add_tickers(new_tickers=ticker_list)
 
