@@ -2,10 +2,8 @@ from typing import List, Optional, Dict
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
 from app.db.repositories.base import BaseRepository
-from app.models.cleaning import CleaningCreate, CleaningUpdate, CleaningInDB
 from app.models.security import EquityCreate, EquityInDB, SecurityInDB, SecuritiesAddedToDB, InvalidTickers, \
     SecuritiesAlreadyInDB, POSTTickerResponse
-import pdb
 import yfinance as yf
 import numpy as np
 
@@ -26,13 +24,30 @@ GET_ALL_SECURITIES_QUERY = """
     FROM securities;
     """
 
+GET_EQUITIES_QUERY = """
+    SELECT ticker, name, country, sector, industry, exchange
+    FROM equities
+    WHERE 
+        ((ticker = ANY(:tickers)) OR (:tickers IS NULL))
+        AND ((name ILIKE ANY(:names)) OR (:names IS NULL))
+        AND ((sector = ANY(:sectors)) OR (:sectors IS NULL))
+        AND ((industry = ANY(:industries)) OR (:industries IS NULL))
+        AND ((country = ANY(:countries)) OR (:countries IS NULL))
+        AND ((exchange = ANY(:exchanges)) OR (:exchanges IS NULL));
+    """
+
+GET_ALL_EQUITIES_QUERY = """
+    SELECT ticker, name, country, sector, industry, exchange
+    FROM equities
+    """
+
 
 class SecuritiesRepository(BaseRepository):
     """"
     All database actions associated with the Ticker resource
     """
 
-    async def add_tickers(self, *, new_tickers: List[str]) -> POSTTickerResponse:
+    async def add_tickers(self, *, tickers: List[str]) -> POSTTickerResponse:
 
         added_tickers = SecuritiesAddedToDB(securities=[])
         invalid_tickers = InvalidTickers(tickers=[])
@@ -41,9 +56,9 @@ class SecuritiesRepository(BaseRepository):
         # GET tickers that are already existing in database. If there are no existing tickers in the db, GET function
         # returns None. Therefore use lambda function to replace None with empty List to satisfy data validation.
         existing_tickers.securities = (lambda x: [] if x is None else x) \
-            (await self.get_securities_by_ticker(tickers=new_tickers))
+            (await self.get_securities_by_ticker(tickers=tickers))
 
-        for ticker in list(np.setdiff1d(new_tickers, [t.ticker for t in existing_tickers.securities])):
+        for ticker in list(np.setdiff1d(tickers, [t.ticker for t in existing_tickers.securities])):
 
             try:
                 data = yf.Ticker(ticker).info
@@ -89,3 +104,31 @@ class SecuritiesRepository(BaseRepository):
             return None
 
         return [SecurityInDB(**s) for s in securities]
+
+    async def get_equities_by_ticker(self, *, tickers: Optional[List[str]] = None, names: Optional[List[str]] = None,
+                                     sectors: Optional[List[str]] = None, industries: Optional[List[str]] = None,
+                                     countries: Optional[List[str]] = None, exchanges: Optional[List[str]] = None
+                                     ) -> Optional[List[EquityInDB]]:
+
+        #Optional WHERE IN ANY() SQL query above requires tuple of values to filter, or NULL/None to ignore filter
+        #Lambda function below returns tuple if list is passed, otherwise None
+        tuple_or_none = (lambda x: tuple(x) if x is not None else x)
+        query_values = {'tickers': tuple_or_none(tickers), 'names': tuple_or_none(names),
+                        'sectors': tuple_or_none(sectors), 'industries': tuple_or_none(industries),
+                        'countries': tuple_or_none(countries), 'exchanges': tuple_or_none(exchanges)}
+
+        equities = await self.db.fetch_all(query=GET_EQUITIES_QUERY, values=query_values)
+
+        if not equities:
+            return None
+
+        return [EquityInDB(**e) for e in equities]
+
+    async def get_all_equities(self) -> Optional[List[EquityInDB]]:
+
+        equities = await self.db.fetch_all(query=GET_ALL_EQUITIES_QUERY)
+
+        if not equities:
+            return None
+
+        return [EquityInDB(**e) for e in equities]

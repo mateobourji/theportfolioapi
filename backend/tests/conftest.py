@@ -7,11 +7,13 @@ from httpx import AsyncClient
 from databases import Database
 import alembic
 from alembic.config import Config
+from typing import List
 from app.models.cleaning import CleaningCreate, CleaningInDB
 from app.db.repositories.cleanings import CleaningsRepository
 from app.models.user import UserCreate, UserInDB
 from app.models.security import EquityCreate, EquityInDB, SecurityInDB
 from app.db.repositories.securities import SecuritiesRepository
+
 
 # Apply migrations at beginning and end of testing session
 @pytest.fixture(scope="session")
@@ -48,6 +50,7 @@ async def client(app: FastAPI) -> AsyncClient:
         ) as client:
             yield client
 
+
 # Mock cleaning data for our tests
 
 @pytest.fixture
@@ -60,6 +63,7 @@ async def test_cleaning(db: Database) -> CleaningInDB:
         cleaning_type="spot_clean",
     )
     return await cleaning_repo.create_cleaning(new_cleaning=new_cleaning)
+
 
 @pytest.fixture
 async def test_user(db: Database) -> UserInDB:
@@ -74,32 +78,42 @@ async def test_user(db: Database) -> UserInDB:
         return existing_user
     return await user_repo.register_new_user(new_user=new_user)
 
-@pytest.fixture
-async def test_equity1(db: Database) -> EquityInDB:
-    new_equity = EquityCreate(
-        ticker="TEST",
-        name="Test Name",
-        country="Test Country",
-        summary="Test summary.",
-        sector="Test Sector",
-        industry="Test Industry",
-        exchange="TestExchange"
-    )
-    security_repo = SecuritiesRepository(db)
-
-    return await security_repo.add_equity(new_equity=new_equity)
 
 @pytest.fixture
-async def test_equity2(db: Database) -> EquityInDB:
-    new_equity = EquityCreate(
-        ticker="TEST2",
-        name="Test Name2",
-        country="Test Country2",
-        summary="Test summary2.",
-        sector="Test Sector2",
-        industry="Test Industry2",
-        exchange="TestExchange2"
-    )
-    security_repo = SecuritiesRepository(db)
+async def test_equities1(db: Database) -> List[EquityInDB]:
 
-    return await security_repo.add_equity(new_equity=new_equity)
+    equities = [EquityInDB(ticker='CSCO',
+                           name='Cisco Systems, Inc.',
+                           country='United States',
+                           sector='Technology',
+                           industry='Communication Equipment',
+                           exchange='NMS'),
+                EquityInDB(ticker='NFLX',
+                           name='Netflix, Inc.',
+                           country='United States',
+                           sector='Communication Services',
+                           industry='Entertainment',
+                           exchange='NMS'),
+                EquityInDB(ticker="AAPL",
+                           name="Apple Inc.",
+                           country="United States",
+                           sector="Technology",
+                           industry="Consumer Electronics",
+                           exchange="NMS"),
+                EquityInDB(ticker="AMZN",
+                           name="Amazon.com, Inc.",
+                           country="United States",
+                           sector="Consumer Cyclical",
+                           industry="Internet Retail",
+                           exchange="NMS"),
+                EquityInDB(ticker="BP",
+                           name="BP p.l.c.",
+                           country="United Kingdom",
+                           sector="Energy",
+                           industry="Oil & Gas Integrated",
+                           exchange="NYQ")
+                ]
+
+    await SecuritiesRepository(db).add_tickers(tickers=[equity.ticker for equity in equities])
+
+    return equities
