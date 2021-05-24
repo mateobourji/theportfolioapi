@@ -12,7 +12,7 @@ router = APIRouter()
 
 # TODO: return tickers that were not valid and were not added to db, and tickers that are already in db
 @router.post("/", name="securities:add-tickers", response_model=POSTTickerResponse, status_code=HTTP_201_CREATED)
-async def add_tickers(ticker_list: List[str] = Body(..., title="List of Tickers", max_length=4),
+async def add_tickers(ticker_list: List[str] = Body(..., title="List of Tickers"),
                       tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                       ) -> POSTTickerResponse:
     tickers = await tickers_repo.add_tickers(tickers=ticker_list)

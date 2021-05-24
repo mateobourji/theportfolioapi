@@ -8,6 +8,7 @@ pandas==1.2.4
 scipy==1.6.3
 numpy==1.20.2
 yfinance==0.1.59
+yahooquery==2.2.15
 psycopg2==2.8.6
 # db
 databases[postgresql]==0.4.2

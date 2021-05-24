@@ -23,6 +23,11 @@ def test_tickers2():
 def test_tickers3():
     return ["AMZN", "GOOG"]
 
+@pytest.fixture
+def test_tickers4():
+    """ETFs"""
+    return ["BND"]
+
 
 @pytest.fixture
 def ticker_list():
@@ -37,6 +42,7 @@ def invalid_tickers():
 @pytest.fixture()
 def test_equities_ticker_filter():
     return ["CSCO", "NFLX"]
+
 
 
 class TestTickersRoutes:
@@ -57,6 +63,15 @@ class TestCreateTicker:
 
         created_ticker = [ticker['ticker'] for ticker in res.json()['added_tickers']['securities']]
         assert created_ticker == test_tickers2
+
+    async def test_valid_ETF_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers4: List[str]
+                                              ) -> None:
+        res = await client.post(app.url_path_for("securities:add-tickers"), json=test_tickers4)
+        assert res.status_code == HTTP_201_CREATED
+
+        created_ticker = [ticker['ticker'] for ticker in res.json()['added_tickers']['securities']]
+
+        assert created_ticker == test_tickers4
 
     async def test_repeated_input_returns_empty_list(self, app: FastAPI, client: AsyncClient, test_tickers2: List[str]
                                                      ) -> None:
@@ -254,7 +269,7 @@ class TestGetEquity:
     @pytest.mark.parametrize(
         "filters, parameters, status_code",
         (
-                ("tickers", ["AAPL", "INVALID"], 404),
+                ("tickers", ["INVALID"], 404),
                 ("countries", -1, 404),
                 ("sectors", "invalid", 404),
                 ("exchanges", ["CAC", "FLO"], 404)
