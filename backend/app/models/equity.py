@@ -1,37 +1,33 @@
-from app.models.security import SecurityBase
-from typing import Optional
-from app.models.core import IDModelMixin, CoreModel
+from app.models.core import CoreModel
 
 
-class EquityBase(SecurityBase):
+class EquityBase(CoreModel):
+    """
+    All common characteristics of our ETF resource
+    """
+
+
+class EquityCreate(EquityBase):
+    ticker: str
+    name: str
+    country: str
+    sector: str
+    industry: str
+    exchange: str
+
+
+class EquityUpdate(EquityBase):
     pass
 
-class EquityCreate(SecurityBase):
+
+class EquityInDB(EquityBase):
     ticker: str
     name: str
     country: str
-    summary: str
     sector: str
     industry: str
     exchange: str
 
 
-class EquityUpdate(SecurityBase):
-    security_name: Optional[str]
-    description: Optional[str]
-    country: Optional[str]
-    security_type: Optional[str]
-
-
-class EquityInDB(IDModelMixin, SecurityBase):
-    ticker: str
-    name: str
-    country: str
-    summary: str
-    sector: str
-    industry: str
-    exchange: str
-
-
-class EquityPublic(IDModelMixin, SecurityBase):
+class EquityPublic(EquityBase):
     pass

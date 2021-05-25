@@ -8,10 +8,9 @@ from databases import Database
 import alembic
 from alembic.config import Config
 from typing import List
-from app.models.cleaning import CleaningCreate, CleaningInDB
-from app.db.repositories.cleanings import CleaningsRepository
 from app.models.user import UserCreate, UserInDB
-from app.models.security import EquityCreate, EquityInDB, SecurityInDB
+from app.models.security import SecurityInDB
+from app.models.equity import EquityCreate, EquityInDB
 from app.db.repositories.securities import SecuritiesRepository
 
 
@@ -52,17 +51,6 @@ async def client(app: FastAPI) -> AsyncClient:
 
 
 # Mock cleaning data for our tests
-
-@pytest.fixture
-async def test_cleaning(db: Database) -> CleaningInDB:
-    cleaning_repo = CleaningsRepository(db)
-    new_cleaning = CleaningCreate(
-        name="fake cleaning name",
-        description="fake cleaning description",
-        price=9.99,
-        cleaning_type="spot_clean",
-    )
-    return await cleaning_repo.create_cleaning(new_cleaning=new_cleaning)
 
 
 @pytest.fixture

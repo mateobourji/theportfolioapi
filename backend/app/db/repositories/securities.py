@@ -2,8 +2,10 @@ from typing import List, Optional, Dict
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
 from app.db.repositories.base import BaseRepository
-from app.models.security import EquityCreate, EquityInDB, SecurityInDB, SecuritiesAddedToDB, InvalidTickers, \
-    SecuritiesAlreadyInDB, POSTTickerResponse, ETFCreate, ETFInDB
+from app.models.security import SecurityInDB, SecuritiesAddedToDB, InvalidTickers, SecuritiesAlreadyInDB, \
+    POSTTickerResponse
+from app.models.equity import EquityCreate, EquityInDB
+from app.models.etf import ETFCreate, ETFInDB
 import yfinance as yf
 import yahooquery as yq
 import numpy as np
@@ -32,13 +34,8 @@ ADD_ETF_QUERY = """
 GET_SECURITIES_QUERY = """
     SELECT ticker, type 
     FROM securities
-    WHERE ticker = ANY(:tickers)
+    WHERE ((ticker = ANY(:tickers)) OR (:tickers IS NULL))
     ORDER BY ticker asc;
-    """
-
-GET_ALL_SECURITIES_QUERY = """
-    SELECT ticker, type
-    FROM securities;
     """
 
 GET_EQUITIES_QUERY = """
@@ -52,11 +49,6 @@ GET_EQUITIES_QUERY = """
         AND ((country = ANY(:countries)) OR (:countries IS NULL))
         AND ((exchange = ANY(:exchanges)) OR (:exchanges IS NULL))
     ORDER BY ticker asc;
-    """
-
-GET_ALL_EQUITIES_QUERY = """
-    SELECT ticker, name, country, sector, industry, exchange
-    FROM equities
     """
 
 
@@ -146,18 +138,11 @@ class SecuritiesRepository(BaseRepository):
         return ETFInDB(**etf)
 
     async def get_securities_by_ticker(self, *, tickers: List[str]) -> Optional[List[SecurityInDB]]:
-        query_values = {'tickers': tuple(tickers)}
+        # Optional WHERE IN ANY() SQL query above requires tuple of values to filter, or NULL/None to ignore filter
+        # Lambda function below returns tuple if list is passed, otherwise None
+        query_values = {'tickers': (lambda x: tuple(x) if x is not None else x)(tickers)}
 
         securities = await self.db.fetch_all(query=GET_SECURITIES_QUERY, values=query_values)
-
-        if not securities:
-            return None
-
-        return [SecurityInDB(**s) for s in securities]
-
-    async def get_all_securities(self) -> Optional[List[SecurityInDB]]:
-
-        securities = await self.db.fetch_all(query=GET_ALL_SECURITIES_QUERY)
 
         if not securities:
             return None
@@ -177,15 +162,6 @@ class SecuritiesRepository(BaseRepository):
                         'countries': tuple_or_none(countries), 'exchanges': tuple_or_none(exchanges)}
 
         equities = await self.db.fetch_all(query=GET_EQUITIES_QUERY, values=query_values)
-
-        if not equities:
-            return None
-
-        return [EquityInDB(**e) for e in equities]
-
-    async def get_all_equities(self) -> Optional[List[EquityInDB]]:
-
-        equities = await self.db.fetch_all(query=GET_ALL_EQUITIES_QUERY)
 
         if not equities:
             return None

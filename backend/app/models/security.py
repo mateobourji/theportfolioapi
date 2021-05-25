@@ -1,15 +1,6 @@
-from typing import Optional, List, Type
-from enum import Enum
-from app.models.core import IDModelMixin, CoreModel
+from typing import List
+from app.models.core import CoreModel
 
-
-# class SecurityType(str, Enum):
-#     equity = "equity"
-#     fixed_income = "fixed_income"
-#     etf = "etf"
-#     cryptocurrency = "cryptocurrency"
-#     index = "index"
-#     commodity = "commodity"
 
 class SecurityBase(CoreModel):
     """
@@ -48,63 +39,7 @@ class POSTTickerResponse(CoreModel):
     invalid_tickers: InvalidTickers
 
 
-class EquityCreate(SecurityBase):
-    ticker: str
-    name: str
-    country: str
-    sector: str
-    industry: str
-    exchange: str
 
 
-class EquityUpdate(SecurityBase):
-    pass
 
 
-class EquityInDB(SecurityBase):
-    ticker: str
-    name: str
-    country: str
-    sector: str
-    industry: str
-    exchange: str
-
-
-class EquityPublic(SecurityBase):
-    pass
-
-
-class ETFCreate(SecurityBase):
-    ticker: str
-    name: str
-    exchange: str
-    bond_position: float
-    bond_maturity: float
-    bond_duration: float
-    bb_bonds: float
-    aa_bonds: float
-    aaa_bonds: float
-    a_bonds: float
-    other_bonds: float
-    b_bonds: float
-    bbb_bonds: float
-    below_b_bonds: float
-    us_gov_bonds: float
-    stock_position: float
-    real_estate: float
-    consumer_cyclical: float
-    basic_materials: float
-    consumer_defensive: float
-    technology: float
-    communication_services: float
-    financial_services: float
-    utilities: float
-    industrials: float
-    energy: float
-    healthcare: float
-
-
-class ETFInDB(SecurityBase):
-    ticker: str
-    name: str
-    exchange: str
