@@ -4,8 +4,11 @@ from starlette.datastructures import Secret
 
 config = Config(".env")
 PROJECT_NAME = "PyFolio-API"
-VERSION = "1.0.0"
+VERSION = "0.1.0"
+DESCRIPTION = "PyFolio is an API built in Python to screen portfolio investments across multiple asset classes," \
+              " download historical performance data, and build portfolios through various optimization techniques."
 API_PREFIX = "/api"
+DOCS_URL = "/"
 
 SECRET_KEY = config("SECRET_KEY", cast=Secret)
 ACCESS_TOKEN_EXPIRE_MINUTES = config(
