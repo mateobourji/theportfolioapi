@@ -2,7 +2,7 @@ from typing import List, Optional, Dict
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
 from app.models.security import SecurityInDB, SecuritiesAddedToDB, POSTTickerResponse
-from app.models.equity import EquityCreate, EquityInDB
+from app.models.equity import EquityCreate, EquityInDB, EquityQueryParams
 from app.models.etf import ETFCreate, ETFInDB, ETFQueryParams
 import yfinance as yf
 from app.db.repositories.securities import SecuritiesRepository
@@ -39,17 +39,10 @@ async def get_tickers(q: Optional[List[str]] = Query(None, title="List of ticker
 
 @router.get("/equities/", name="equities:get-equities", response_model=List[EquityInDB],
             status_code=HTTP_200_OK)
-async def get_equities(tickers: Optional[List[str]] = Query(None, title="List of equity tickers to filter."),
-                       names: Optional[List[str]] = Query(None, title="List of company names to filter."),
-                       sectors: Optional[List[str]] = Query(None, title="List of sectors to filter."),
-                       industries: Optional[List[str]] = Query(None, title="List of industries to filter."),
-                       countries: Optional[List[str]] = Query(None, title="List of countries to filter."),
-                       exchanges: Optional[List[str]] = Query(None, title="List of stock exchanges to filter."),
+async def get_equities(params: EquityQueryParams = Depends(),
                        tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                        ) -> List[EquityInDB]:
-    equities = await tickers_repo.get_equities_by_ticker(tickers=tickers, names=names, sectors=sectors,
-                                                         industries=industries, countries=countries,
-                                                         exchanges=exchanges)
+    equities = await tickers_repo.get_equities_by_ticker(params=params)
 
     if not equities:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No equities with the current filters in the "

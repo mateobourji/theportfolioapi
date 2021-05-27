@@ -4,7 +4,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from app.db.repositories.base import BaseRepository
 from app.models.security import SecurityInDB, SecuritiesAddedToDB, InvalidTickers, SecuritiesAlreadyInDB, \
     POSTTickerResponse
-from app.models.equity import EquityCreate, EquityInDB
+from app.models.equity import EquityCreate, EquityInDB, EquityQueryParams
 from app.models.etf import ETFCreate, ETFInDB, ETFQueryParams
 import numpy as np
 from app.core.external_data_interface import Ticker_Data
@@ -136,19 +136,9 @@ class SecuritiesRepository(BaseRepository):
 
         return ETFInDB(**etf)
 
-    async def get_equities_by_ticker(self, *, tickers: Optional[List[str]] = None, names: Optional[List[str]] = None,
-                                     sectors: Optional[List[str]] = None, industries: Optional[List[str]] = None,
-                                     countries: Optional[List[str]] = None, exchanges: Optional[List[str]] = None
-                                     ) -> Optional[List[EquityInDB]]:
+    async def get_equities_by_ticker(self, *, params: EquityQueryParams) -> Optional[List[EquityInDB]]:
 
-        # Optional WHERE IN ANY() SQL query above requires tuple of values to filter, or NULL/None to ignore filter
-        # Lambda function below returns tuple if list is passed, otherwise None
-        tuple_or_none = (lambda x: tuple(x) if x is not None else x)
-        query_values = {'tickers': tuple_or_none(tickers), 'names': tuple_or_none(names),
-                        'sectors': tuple_or_none(sectors), 'industries': tuple_or_none(industries),
-                        'countries': tuple_or_none(countries), 'exchanges': tuple_or_none(exchanges)}
-
-        equities = await self.db.fetch_all(query=GET_EQUITIES_QUERY, values=query_values)
+        equities = await self.db.fetch_all(query=GET_EQUITIES_QUERY, values=vars(params))
 
         if not equities:
             return None
