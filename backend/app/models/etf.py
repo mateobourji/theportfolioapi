@@ -67,9 +67,9 @@ class ETFInDB(ETFBase):
 
 class ETFQueryParams:
     def __init__(self,
-                 tickers: Optional[List[str]] = Query(None, title="List of equity tickers to filter."),
-                 names: Optional[List[str]] = Query(None, title="List of company names to filter."),
-                 exchanges: Optional[List[str]] = Query(None, title="List of stock exchanges to filter."),
+                 tickers: Optional[List[str]] = Query(None, description="List of equity tickers to filter."),
+                 names: Optional[List[str]] = Query(None, description="List of company names to filter."),
+                 exchanges: Optional[List[str]] = Query(None, description="List of stock exchanges to filter."),
                  min_stock: Optional[float] = Query(None, le=1, description="Minimum % of equity holdings."),
                  min_bond: Optional[float] = Query(None, le=1, description="Minimum % of fixed income holdings."),
                  min_investment_grade: Optional[float] = Query(None, le=1,
@@ -153,6 +153,8 @@ class ETFQueryParams:
                                                          description="Maximum % of healthcare sector exposure within "
                                                                      "equity holdings"),
                  ):
+        # Optional WHERE IN ANY() SQL query in repo requires tuple of values to filter or NULL/None to ignore filter
+        # Lambda function below returns tuple if list is passed, otherwise None
         self.tickers = (lambda x: tuple(x) if x is not None else x)(tickers)
         self.names = (lambda x: tuple(x) if x is not None else x)(names)
         self.exchanges = (lambda x: tuple(x) if x is not None else x)(exchanges)

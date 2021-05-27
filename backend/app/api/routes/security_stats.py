@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
-from app.core.Download_Data import Download_Data
+from app.core.external_data_interface import Financial_Data
 import datetime
 from app.core.check_tickers import check_tickers
 from app.core.Hist_Data import Hist_Data
@@ -13,7 +13,7 @@ async def return_hist_returns(q: List[str] = Query(..., title="List of securitie
                            start: Optional[datetime.date] = "2000-01-01",
                            end: Optional[datetime.date] = datetime.date.today()):
     check_tickers(q)
-    data = Download_Data(q, 'YF', start=start, end=end)
+    data = Financial_Data(q, 'YF', start=start, end=end)
     hist_data = Hist_Data(securities=q, prices=data.prices.fillna(0), dividends=data.dividends.fillna(0))
     return {'returns': hist_data.returns,
             'mean': hist_data.mean,

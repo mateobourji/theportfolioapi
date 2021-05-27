@@ -59,8 +59,7 @@ async def get_equities(tickers: Optional[List[str]] = Query(None, title="List of
     return equities
 
 
-@router.get("/ETFs/", name="equities:get-ETFs", response_model=List[ETFInDB],
-            status_code=HTTP_200_OK)
+@router.get("/ETFs/", name="equities:get-ETFs", response_model=List[ETFInDB], status_code=HTTP_200_OK)
 async def get_etfs(params: ETFQueryParams = Depends(),
                    tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                    ) -> List[ETFInDB]:
