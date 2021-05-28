@@ -45,4 +45,9 @@ class EquityQueryParams:
         self.exchanges = (lambda x: tuple(x) if x is not None else x)(exchanges)
 
 class EquityPublic(EquityBase):
-    pass
+    ticker: str
+    name: str
+    country: str
+    sector: str
+    industry: str
+    exchange: str

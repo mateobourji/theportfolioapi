@@ -13,6 +13,10 @@ class TickerInDB(TickerBase):
     ticker: str
     type: str
 
+class TickerPublic(TickerBase):
+    """Instances of securities registered in database."""
+    ticker: str
+    type: str
 
 class TickersAddedToDB(CoreModel):
     """Contains list of TickerInDB models that were added to DB."""

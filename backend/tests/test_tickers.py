@@ -2,9 +2,9 @@ import pytest
 from httpx import AsyncClient
 from fastapi import FastAPI
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
-from app.models.ticker import TickerInDB, TickerBase
+from app.models.ticker import TickerInDB
 from app.models.equity import EquityInDB
-from typing import List, Union
+from typing import List
 
 # decorate all tests with @pytest.mark.asyncio
 pytestmark = pytest.mark.asyncio
@@ -62,15 +62,15 @@ class TestCreateTicker:
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=test_tickers2)
         assert res.status_code == HTTP_201_CREATED
 
-        created_ticker = [ticker['ticker'] for ticker in res.json()['added_tickers']['securities']]
+        created_ticker = [ticker['ticker'] for ticker in res.json()]
         assert created_ticker == test_tickers2
 
-    async def test_valid_ETF_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers4: List[str]
+    async def test_valid_etf_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers4: List[str]
                                                   ) -> None:
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=test_tickers4)
         assert res.status_code == HTTP_201_CREATED
 
-        created_ticker = [ticker['ticker'] for ticker in res.json()['added_tickers']['securities']]
+        created_ticker = [ticker['ticker'] for ticker in res.json()]
 
         assert created_ticker == test_tickers4
 
@@ -78,18 +78,12 @@ class TestCreateTicker:
                                                      ) -> None:
         # If tickers are already in db, API should return empty list.
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=test_tickers2)
-        assert res.status_code == HTTP_201_CREATED
-
-        created_ticker = [ticker['ticker'] for ticker in res.json()['added_tickers']['securities']]
-        assert created_ticker == []
+        assert res.status_code == HTTP_404_NOT_FOUND
 
     async def test_invalid_ticker(self, app: FastAPI, client: AsyncClient, invalid_tickers: List[str]) -> None:
-        # If tickers are already in db, API should return empty list.
+        # If tickers are invalid, API should return empty list.
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=invalid_tickers)
-        assert res.status_code == HTTP_201_CREATED
-
-        returned_tickers = res.json()['invalid_tickers']['tickers']
-        assert returned_tickers[::-1] == invalid_tickers
+        assert res.status_code == HTTP_404_NOT_FOUND
 
     async def test_partial_repeated_input_returns_partial_creation(self, app: FastAPI, client: AsyncClient,
                                                                    test_tickers3: List[str]) -> None:
@@ -98,7 +92,7 @@ class TestCreateTicker:
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=test_tickers3)
         assert res.status_code == HTTP_201_CREATED
 
-        created_ticker = [ticker['ticker'] for ticker in res.json()['added_tickers']['securities']]
+        created_ticker = [ticker['ticker'] for ticker in res.json()]
         assert created_ticker == [test_tickers3[1]]
 
     @pytest.mark.parametrize(
@@ -283,7 +277,7 @@ class TestGetEquity:
 
 
 class TestGetETF:
-    async def test_valid_request_gets_ETFs(
+    async def test_valid_request_gets_etfs(
             self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         params = {'tickers': [test_equities1[0].ticker, test_equities1[1].ticker]}
         res = await client.get(app.url_path_for("equities:get-equities"), params=params)

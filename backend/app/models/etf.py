@@ -50,6 +50,25 @@ class ETFInDB(ETFBase):
     energy: float
     healthcare: float
 
+class ETFPublic(ETFBase):
+    ticker: str
+    name: str
+    exchange: str
+    bond_position: float
+    investment_grade_bonds: float
+    junk_bonds: float
+    stock_position: float
+    real_estate: float
+    consumer_cyclical: float
+    basic_materials: float
+    consumer_defensive: float
+    technology: float
+    communication_services: float
+    financial_services: float
+    utilities: float
+    industrials: float
+    energy: float
+    healthcare: float
 
 class ETFQueryParams:
     def __init__(self,

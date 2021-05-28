@@ -1,9 +1,8 @@
 from typing import List, Optional
 from app.db.repositories.base import BaseRepository
-from app.models.ticker import TickerInDB, TickersAddedToDB, InvalidTickers, TickersAlreadyInDB, \
-    POSTTickerResponse
-from app.models.equity import EquityCreate, EquityInDB, EquityQueryParams
-from app.models.etf import ETFCreate, ETFInDB, ETFQueryParams
+from app.models.ticker import TickerPublic
+from app.models.equity import EquityCreate, EquityInDB, EquityQueryParams, EquityPublic
+from app.models.etf import ETFCreate, ETFInDB, ETFQueryParams, ETFPublic
 import numpy as np
 from app.core.external_data_interface import Ticker_Data
 
@@ -91,34 +90,29 @@ class SecuritiesRepository(BaseRepository):
     All database actions associated with the Ticker resource
     """
 
-    async def add_tickers(self, *, tickers: List[str]) -> POSTTickerResponse:
+    async def add_tickers(self, *, tickers: List[str]) -> List[TickerPublic]:
 
-        added_tickers = TickersAddedToDB(securities=[])
-        invalid_tickers = InvalidTickers(tickers=[])
-        existing_tickers = TickersAlreadyInDB(securities=[])
+        added_tickers = []
 
-        # GET tickers that are already existing in database. If there are no existing tickers in the db, GET function
-        # returns None. Therefore use lambda function to replace None with empty List to satisfy data validation.
-        existing_tickers.securities = (lambda x: [] if x is None else x) \
-            (await self.get_securities_by_ticker(tickers=tickers))
+        """GET tickers that are already existing in database to avoid unique constraint. Use list comprehension to 
+         generate list of tickers from List[TickerPublic]. However, if there are no existing tickers in the db, 
+         GET function returns None. Therefore use lambda function to replace None with empty List."""
+        existing_tickers = [security.ticker for security in
+                            (lambda x: [] if x is None else x)(await self.get_securities_by_ticker(tickers=tickers))]
 
-        for ticker in list(np.setdiff1d(tickers, [t.ticker for t in existing_tickers.securities])):
+        for ticker in list(np.setdiff1d(tickers, existing_tickers)):
 
             data = Ticker_Data(ticker)
 
             if data.quoteType == 'EQUITY':
                 await self._add_equity(new_equity=EquityCreate.parse_obj(vars(data)))
-                added_tickers.securities.append(TickerInDB(ticker=ticker, type='Equity'))
+                added_tickers.append(TickerPublic(ticker=ticker, type='Equity'))
 
             if data.quoteType == 'ETF':
                 await self._add_etf(new_ETF=ETFCreate.parse_obj(vars(data)))
-                added_tickers.securities.append(TickerInDB(ticker=ticker, type='ETF'))
+                added_tickers.append(TickerPublic(ticker=ticker, type='ETF'))
 
-            else:
-                invalid_tickers.tickers.append(ticker)
-
-        return POSTTickerResponse(added_tickers=added_tickers, existing_tickers=existing_tickers,
-                                  invalid_tickers=invalid_tickers)
+        return added_tickers
 
     async def _add_equity(self, *, new_equity: EquityCreate) -> EquityInDB:
         query_values = new_equity.dict()
@@ -134,16 +128,16 @@ class SecuritiesRepository(BaseRepository):
 
         return ETFInDB(**etf)
 
-    async def get_equities_by_ticker(self, *, params: EquityQueryParams) -> Optional[List[EquityInDB]]:
+    async def get_equities_by_ticker(self, *, params: EquityQueryParams) -> Optional[List[EquityPublic]]:
 
         equities = await self.db.fetch_all(query=GET_EQUITIES_QUERY, values=vars(params))
 
         if not equities:
             return None
 
-        return [EquityInDB(**e) for e in equities]
+        return [EquityPublic(**e) for e in equities]
 
-    async def get_securities_by_ticker(self, *, tickers: List[str]) -> Optional[List[TickerInDB]]:
+    async def get_securities_by_ticker(self, *, tickers: List[str]) -> Optional[List[TickerPublic]]:
         # Optional WHERE IN ANY() SQL query above requires tuple of values to filter, or NULL/None to ignore filter
         # Lambda function below returns tuple if list is passed, otherwise None
         query_values = {'tickers': (lambda x: tuple(x) if x is not None else x)(tickers)}
@@ -153,13 +147,13 @@ class SecuritiesRepository(BaseRepository):
         if not securities:
             return None
 
-        return [TickerInDB(**s) for s in securities]
+        return [TickerPublic(**s) for s in securities]
 
-    async def get_etf(self, *, params: ETFQueryParams) -> Optional[List[ETFInDB]]:
+    async def get_etf(self, *, params: ETFQueryParams) -> Optional[List[ETFPublic]]:
 
         etfs = await self.db.fetch_all(query=GET_ETFS_QUERY, values=vars(params))
 
         if not etfs:
             return None
 
-        return [ETFInDB(**etf) for etf in etfs]
+        return [ETFPublic(**etf) for etf in etfs]
