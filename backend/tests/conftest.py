@@ -9,9 +9,9 @@ import alembic
 from alembic.config import Config
 from typing import List
 from app.models.user import UserCreate, UserInDB
-from app.models.security import SecurityInDB
+from app.models.ticker import TickerInDB
 from app.models.equity import EquityCreate, EquityInDB
-from app.db.repositories.securities import SecuritiesRepository
+from app.db.repositories.assets import SecuritiesRepository
 
 
 # Apply migrations at beginning and end of testing session

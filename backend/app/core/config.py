@@ -9,6 +9,23 @@ DESCRIPTION = "PyFolio is an API built in Python to screen portfolio investments
               " download historical performance data, and build portfolios through various optimization techniques."
 API_PREFIX = "/api"
 DOCS_URL = "/"
+TAGS_META = [{
+    "name": "assets",
+    "description": "Add, update, and delete assets in the database."
+},
+{
+    "name": "screener",
+    "description": "Screen assets throughout different asset classes."
+},
+{
+    "name": "historical performance",
+    "description": "Download historical performance of tickers."
+},
+{
+    "name": "portfolio",
+    "description": "Build optimized portfolio."
+}
+]
 
 SECRET_KEY = config("SECRET_KEY", cast=Secret)
 ACCESS_TOKEN_EXPIRE_MINUTES = config(

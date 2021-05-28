@@ -1,7 +1,7 @@
 from app.models.core import CoreModel
 from typing import Optional, List
 from fastapi import Query
-from pydantic import Field
+
 
 
 class ETFBase(CoreModel):
@@ -29,20 +29,6 @@ class ETFCreate(ETFBase):
     industrials: float
     energy: float
     healthcare: float
-
-
-class ETFBondData(CoreModel):
-    bond_position: float
-    bb_bonds: float
-    aa_bonds: float
-    aaa_bonds: float
-    a_bonds: float
-    other_bonds: float
-    b_bonds: float
-    bbb_bonds: float
-    below_b_bonds: float
-    us_gov_bonds: float
-
 
 class ETFInDB(ETFBase):
     ticker: str

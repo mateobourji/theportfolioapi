@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from fastapi import FastAPI
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
-from app.models.security import SecurityInDB, SecurityBase
+from app.models.ticker import TickerInDB, TickerBase
 from app.models.equity import EquityInDB
 from typing import List, Union
 
@@ -23,6 +23,7 @@ def test_tickers2():
 @pytest.fixture
 def test_tickers3():
     return ["AMZN", "GOOG"]
+
 
 @pytest.fixture
 def test_tickers4():
@@ -45,7 +46,6 @@ def test_equities_ticker_filter():
     return ["CSCO", "NFLX"]
 
 
-
 class TestTickersRoutes:
     async def test_routes_exist(self, app: FastAPI, client: AsyncClient, test_tickers: List[str]) -> None:
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=test_tickers)
@@ -66,7 +66,7 @@ class TestCreateTicker:
         assert created_ticker == test_tickers2
 
     async def test_valid_ETF_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers4: List[str]
-                                              ) -> None:
+                                                  ) -> None:
         res = await client.post(app.url_path_for("instruments:add-tickers"), json=test_tickers4)
         assert res.status_code == HTTP_201_CREATED
 
@@ -130,9 +130,9 @@ class TestGetSecurity:
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
-        securities = [SecurityInDB(**s) for s in res.json()]
-        test_security1 = SecurityInDB(ticker=ticker_list[0], type='equity')
-        test_security2 = SecurityInDB(ticker=ticker_list[1], type='equity')
+        securities = [TickerInDB(**s) for s in res.json()]
+        test_security1 = TickerInDB(ticker=ticker_list[0], type='equity')
+        test_security2 = TickerInDB(ticker=ticker_list[1], type='equity')
         assert test_security1 in securities
         assert test_security2 in securities
 
@@ -157,9 +157,9 @@ class TestGetSecurity:
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
-        securities = [SecurityInDB(**s) for s in res.json()]
-        test_security1 = SecurityInDB(ticker=ticker_list[0], type='equity')
-        test_security2 = SecurityInDB(ticker=ticker_list[1], type='equity')
+        securities = [TickerInDB(**s) for s in res.json()]
+        test_security1 = TickerInDB(ticker=ticker_list[0], type='equity')
+        test_security2 = TickerInDB(ticker=ticker_list[1], type='equity')
         assert test_security1 in securities
         assert test_security2 in securities
 
@@ -254,11 +254,10 @@ class TestGetEquity:
 
         assert all(equity in equities_in_db for equity in
                    [equity for equity in test_equities1 if equity.sector in sector_filter
-                                                        if equity.industry in industry_filter])
+                    if equity.industry in industry_filter])
 
     async def test_no_filters_gets_all_equities(
             self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
-
         res = await client.get(app.url_path_for("equities:get-equities"))
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
@@ -281,6 +280,7 @@ class TestGetEquity:
         params = {filters: parameters}
         res = await client.get(app.url_path_for("equities:get-equities"), params=params)
         assert res.status_code == status_code
+
 
 class TestGetETF:
     async def test_valid_request_gets_ETFs(

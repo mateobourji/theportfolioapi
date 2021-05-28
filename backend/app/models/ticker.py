@@ -2,22 +2,22 @@ from typing import List
 from app.models.core import CoreModel
 
 
-class SecurityBase(CoreModel):
+class TickerBase(CoreModel):
     """
     All common characteristics of our Ticker resource
     """
 
 
-class SecurityInDB(SecurityBase):
+class TickerInDB(TickerBase):
     """Instances of securities registered in database."""
     ticker: str
     type: str
 
 
-class SecuritiesAddedToDB(CoreModel):
-    """Contains list of SecurityInDB models that were added to DB."""
+class TickersAddedToDB(CoreModel):
+    """Contains list of TickerInDB models that were added to DB."""
     message: str = "The following tickers have been successfully posted to the database:"
-    securities: List[SecurityInDB]
+    securities: List[TickerInDB]
 
 
 class InvalidTickers(CoreModel):
@@ -26,16 +26,16 @@ class InvalidTickers(CoreModel):
     tickers: List[str]
 
 
-class SecuritiesAlreadyInDB(CoreModel):
-    """Contains list of SecurityInDB models that were already added to DB and cannot be re-added."""
+class TickersAlreadyInDB(CoreModel):
+    """Contains list of TickerInDB models that were already added to DB and cannot be re-added."""
     message: str = "The following tickers were already included in the database and cannot be re-added:"
-    securities: List[SecurityInDB]
+    securities: List[TickerInDB]
 
 
 class POSTTickerResponse(CoreModel):
     """Response model for POST ticker endpoint"""
-    added_tickers: SecuritiesAddedToDB
-    existing_tickers: SecuritiesAlreadyInDB
+    added_tickers: TickersAddedToDB
+    existing_tickers: TickersAlreadyInDB
     invalid_tickers: InvalidTickers
 
 

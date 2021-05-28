@@ -1,8 +1,6 @@
-from typing import List, Optional, Dict
-from fastapi import HTTPException
-from starlette.status import HTTP_400_BAD_REQUEST
+from typing import List, Optional
 from app.db.repositories.base import BaseRepository
-from app.models.security import SecurityInDB, SecuritiesAddedToDB, InvalidTickers, SecuritiesAlreadyInDB, \
+from app.models.ticker import TickerInDB, TickersAddedToDB, InvalidTickers, TickersAlreadyInDB, \
     POSTTickerResponse
 from app.models.equity import EquityCreate, EquityInDB, EquityQueryParams
 from app.models.etf import ETFCreate, ETFInDB, ETFQueryParams
@@ -95,9 +93,9 @@ class SecuritiesRepository(BaseRepository):
 
     async def add_tickers(self, *, tickers: List[str]) -> POSTTickerResponse:
 
-        added_tickers = SecuritiesAddedToDB(securities=[])
+        added_tickers = TickersAddedToDB(securities=[])
         invalid_tickers = InvalidTickers(tickers=[])
-        existing_tickers = SecuritiesAlreadyInDB(securities=[])
+        existing_tickers = TickersAlreadyInDB(securities=[])
 
         # GET tickers that are already existing in database. If there are no existing tickers in the db, GET function
         # returns None. Therefore use lambda function to replace None with empty List to satisfy data validation.
@@ -110,11 +108,11 @@ class SecuritiesRepository(BaseRepository):
 
             if data.quoteType == 'EQUITY':
                 await self._add_equity(new_equity=EquityCreate.parse_obj(vars(data)))
-                added_tickers.securities.append(SecurityInDB(ticker=ticker, type='Equity'))
+                added_tickers.securities.append(TickerInDB(ticker=ticker, type='Equity'))
 
             if data.quoteType == 'ETF':
                 await self._add_etf(new_ETF=ETFCreate.parse_obj(vars(data)))
-                added_tickers.securities.append(SecurityInDB(ticker=ticker, type='ETF'))
+                added_tickers.securities.append(TickerInDB(ticker=ticker, type='ETF'))
 
             else:
                 invalid_tickers.tickers.append(ticker)
@@ -145,7 +143,7 @@ class SecuritiesRepository(BaseRepository):
 
         return [EquityInDB(**e) for e in equities]
 
-    async def get_securities_by_ticker(self, *, tickers: List[str]) -> Optional[List[SecurityInDB]]:
+    async def get_securities_by_ticker(self, *, tickers: List[str]) -> Optional[List[TickerInDB]]:
         # Optional WHERE IN ANY() SQL query above requires tuple of values to filter, or NULL/None to ignore filter
         # Lambda function below returns tuple if list is passed, otherwise None
         query_values = {'tickers': (lambda x: tuple(x) if x is not None else x)(tickers)}
@@ -155,7 +153,7 @@ class SecuritiesRepository(BaseRepository):
         if not securities:
             return None
 
-        return [SecurityInDB(**s) for s in securities]
+        return [TickerInDB(**s) for s in securities]
 
     async def get_etf(self, *, params: ETFQueryParams) -> Optional[List[ETFInDB]]:
 
