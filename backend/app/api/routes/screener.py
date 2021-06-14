@@ -9,10 +9,7 @@ from app.api.dependencies.database import get_repository
 router = APIRouter()
 
 
-# TODO: return tickers that were not valid and were not added to db, and tickers that are already in db
-
-
-@router.get("/equities/", name="equities:get-equities", response_model=List[EquityPublic],
+@router.get("/equities/", name="screener:get-equities", response_model=List[EquityPublic],
             status_code=HTTP_200_OK)
 async def get_equities(params: EquityQueryParams = Depends(),
                        tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
@@ -27,7 +24,7 @@ async def get_equities(params: EquityQueryParams = Depends(),
     return equities
 
 
-@router.get("/ETFs/", name="equities:get-ETFs", response_model=List[ETFPublic], status_code=HTTP_200_OK)
+@router.get("/ETFs/", name="screener:get-ETFs", response_model=List[ETFPublic], status_code=HTTP_200_OK)
 async def get_etfs(params: ETFQueryParams = Depends(),
                    tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                    ) -> List[ETFPublic]:

@@ -1,20 +1,16 @@
-from typing import List
-from fastapi import APIRouter, Body, Depends, HTTPException, Path
-from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
-from app.models.user import UserCreate, UserPublic, UserInDB, UserUpdate
-from app.db.repositories.users import UsersRepository
-from app.api.dependencies.database import get_repository
-from app.models.token import AccessToken
-from app.services import auth_service
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette.status import (
+    HTTP_201_CREATED,
+    HTTP_401_UNAUTHORIZED,
+)
+
+from app.api.dependencies.auth import get_current_active_user
+from app.api.dependencies.database import get_repository
+from app.db.repositories.users import UsersRepository
+from app.models.token import AccessToken
+from app.models.user import UserCreate, UserInDB, UserPublic
+from app.services import auth_service
 
 router = APIRouter()
 
@@ -45,3 +41,8 @@ async def user_login_with_email_and_password(
         )
     access_token = AccessToken(access_token=auth_service.create_access_token_for_user(user=user), token_type="bearer")
     return access_token
+
+
+@router.get("/me/", response_model=UserPublic, name="users:get-current-user")
+async def get_currently_authenticated_user(current_user: UserInDB = Depends(get_current_active_user)) -> UserPublic:
+    return current_user

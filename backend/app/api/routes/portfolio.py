@@ -4,7 +4,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
 from app.core.external_data_interface import Financial_Data
 import datetime
 from app.core.check_tickers import check_tickers
-from app.core.Hist_Data import Hist_Data
+from app.core.historical_data import Hist_Data
 from app.core.Portfolio import Portfolio
 
 router = APIRouter()

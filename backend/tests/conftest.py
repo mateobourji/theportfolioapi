@@ -9,9 +9,12 @@ import alembic
 from alembic.config import Config
 from typing import List
 from app.models.user import UserCreate, UserInDB
+from app.db.repositories.users import UsersRepository
 from app.models.ticker import TickerInDB
 from app.models.equity import EquityCreate, EquityInDB
 from app.db.repositories.assets import SecuritiesRepository
+from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
+from app.services import auth_service
 
 
 # Apply migrations at beginning and end of testing session
@@ -68,8 +71,17 @@ async def test_user(db: Database) -> UserInDB:
 
 
 @pytest.fixture
-async def test_equities1(db: Database) -> List[EquityInDB]:
+def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
+    access_token = auth_service.create_access_token_for_user(user=test_user, secret_key=str(SECRET_KEY))
+    client.headers = {
+        **client.headers,
+        "Authorization": f"{JWT_TOKEN_PREFIX} {access_token}",
+    }
+    return client
 
+
+@pytest.fixture
+async def test_equities1(db: Database) -> List[EquityInDB]:
     equities = [EquityInDB(ticker='CSCO',
                            name='Cisco Systems, Inc.',
                            country='United States',

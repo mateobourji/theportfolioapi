@@ -1,4 +1,4 @@
-import datetime
+import pandas as pd
 import yfinance as yf
 import yahooquery as yq
 
@@ -6,7 +6,7 @@ import yahooquery as yq
 class Financial_Data:
     """class to download and structure financial data (stock prices, dividends) of securities"""
 
-    def __init__(self, securities, provider, start="2000-01-01", end=datetime.date.today()):
+    def __init__(self, securities, provider, start, end):
         self.securities = securities
         self._provider = provider
         self._start = start
@@ -31,15 +31,26 @@ class Financial_Data:
         return data
 
     def _get_dividends(self):
-        dividends = self._data.drop(columns=["Close", "Adj Close", "Open", "High", "Low", "Volume", "Stock Splits"]) \
-            .droplevel(0, axis=1)
+        dividends = self._data.drop(columns=["Close", "Adj Close", "Open", "High", "Low", "Volume", "Stock Splits"])
 
-        return dividends
+        if len(self.securities) > 1:
+            dividends = dividends.droplevel(0,axis=1)
+
+        else:
+            dividends.rename(columns={"Dividends": self.securities[0]}, inplace=True)
+        # if there are no dividends, column type is numpy.int64, which cannot be encoded by FastAPI
+        # therefore explicitly cast as float64
+
+        return dividends.astype('float64')
 
     def _get_prices(self):
         prices = self._data.drop(columns=["Adj Close", "Open", "High", "Low", "Volume", "Stock Splits", "Dividends"]) \
-            .droplevel(0, axis=1)
 
+        if len(self.securities) > 1:
+            prices = prices.droplevel(0, axis=1)
+
+        else:
+            prices.rename(columns={"Close": self.securities[0]}, inplace=True)
         return prices
 
 

@@ -8,19 +8,19 @@ from app.services import auth_service
 from typing import Optional
 
 GET_USER_BY_EMAIL_QUERY = """
-    SELECT id, username, email, email_verified, password, salt, is_active, is_superuser, created_at, updated_at
+    SELECT id, username, email, email_verified, password, salt, is_active, is_superuser, added_at, updated_at
     FROM users
     WHERE email = :email;
 """
 GET_USER_BY_USERNAME_QUERY = """
-    SELECT id, username, email, email_verified, password, salt, is_active, is_superuser, created_at, updated_at
+    SELECT id, username, email, email_verified, password, salt, is_active, is_superuser, added_at, updated_at
     FROM users
     WHERE username = :username;
 """
 REGISTER_NEW_USER_QUERY = """
     INSERT INTO users (username, email, password, salt)
     VALUES (:username, :email, :password, :salt)
-    RETURNING id, username, email, email_verified, password, salt, is_active, is_superuser, created_at, updated_at;
+    RETURNING id, username, email, email_verified, password, salt, is_active, is_superuser, added_at, updated_at;
 """
 
 

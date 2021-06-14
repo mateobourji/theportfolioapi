@@ -3,27 +3,30 @@ from starlette.config import Config
 from starlette.datastructures import Secret
 
 config = Config(".env")
-PROJECT_NAME = "PyFolio-API"
+PROJECT_NAME = "The Portfolio API"
 VERSION = "0.1.0"
-DESCRIPTION = "PyFolio is an API built in Python to screen portfolio investments across multiple asset classes," \
-              " download historical performance data, and build portfolios through various optimization techniques."
+DESCRIPTION = "The Portfolio API is used to screen portfolio investments across multiple asset classes," \
+              " analyze historical performance data, and build portfolios through various optimization techniques."
 API_PREFIX = "/api"
 DOCS_URL = "/"
-TAGS_META = [{
-    "name": "assets",
-    "description": "Add, update, and delete assets in the database."
-},
+TAGS_META = [
 {
     "name": "screener",
     "description": "Screen assets throughout different asset classes."
 },
 {
     "name": "historical performance",
-    "description": "Download historical performance of tickers."
+    "description": "Get historical performance of a single assets or group of assets. Covers asset prices, dividends,"
+                   " returns, summary statistics (returns mean, std, skew, kurtosis) and joint summary statistics"
+                   " (returns correlation, covariance)."
 },
 {
     "name": "portfolio",
     "description": "Build optimized portfolio."
+},
+    {
+    "name": "admin",
+    "description": "Add, update, and delete assets in the database."
 }
 ]
 
