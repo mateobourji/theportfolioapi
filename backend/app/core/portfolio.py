@@ -1,14 +1,16 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize, Bounds
+from app.core.historical_data import Hist_Data
+import datetime
 
 
-class Portfolio:
+class Portfolio(Hist_Data):
     risk_free_rate = np.power((1 + 0.017260), (1 / 365)) - 1
     # TODO: implement function to pull latest rf rate data from yahoo finance
 
-    def __init__(self, hist_data):
-        self.hist_data = hist_data
+    def __init__(self, securities, provider="YF", start="2000-01-01", end=datetime.date.today(), corr_method='pearson'):
+        super().__init__(securities, provider, start, end, corr_method)
 
     # implemented using np.dot not pd.dot to avoid issues with column names not matching indices names
     @staticmethod
@@ -29,12 +31,12 @@ class Portfolio:
                / cls._portfolio_std(weights, security_cov)
 
     def _equal_weighted_portfolio(self):
-        portfolio_weights = np.ones(len(self.hist_data.securities))
+        portfolio_weights = np.ones(len(self.securities))
         portfolio_weights /= sum(portfolio_weights)
         return portfolio_weights
 
     def _random_weighted_portfolio(self):
-        portfolio_weights = np.random.rand(len(self.hist_data.securities))
+        portfolio_weights = np.random.rand(len(self.securities))
         portfolio_weights /= sum(portfolio_weights)
         return portfolio_weights
 
@@ -47,13 +49,13 @@ class Portfolio:
 
         else:
             optimization_funcs = {'min-variance': {'func': self._portfolio_std,
-                                                   'args': (self.hist_data.cov)},
+                                                   'args': (self.cov)},
                                   'return-over-risk': {'func': self.reverse(self._return_over_risk),
-                                                       'args': (self.hist_data.mean,
-                                                                self.hist_data.cov)},
+                                                       'args': (self.mean,
+                                                                self.cov)},
                                   'sharpe-ratio': {'func': self.reverse(self._sharpe_ratio),
-                                                   'args': (self.hist_data.mean,
-                                                            self.hist_data.cov)}}
+                                                   'args': (self.mean,
+                                                            self.cov)}}
             #using reverse wrapper (* -1) with functions to maximize optimization below
             return minimize(fun=optimization_funcs[optimization]['func'], x0=weights,
                             args=optimization_funcs[optimization]['args'],
@@ -84,8 +86,9 @@ class Portfolio:
                                   'sharpe-ratio': {'func': 'idxmax',
                                                    'col': 'sharpe_ratio'}}
 
-            optimal_portfolio_index = getattr(portfolio_stats, optimization_funcs[optimization]['func'])()[
-                optimization_funcs[optimization]['col']]
+            optimal_portfolio_index = getattr(portfolio_stats,
+                                              optimization_funcs[optimization]['func'])()\
+                                              [optimization_funcs[optimization]['col']]
 
             return portfolio_weights.iloc[optimal_portfolio_index-1, :][0]
 
@@ -95,10 +98,10 @@ class Portfolio:
         for i in range(simulations):
             id = i + 1
             weights = self._random_weighted_portfolio()
-            returns = self._portfolio_returns(weights, self.hist_data.mean)
-            std = self._portfolio_std(weights, self.hist_data.cov)
-            return_over_risk = self._return_over_risk(weights, self.hist_data.mean, self.hist_data.cov)
-            sharpe_ratio = self._sharpe_ratio(weights, self.hist_data.mean, self.hist_data.cov)
+            returns = self._portfolio_returns(weights, self.mean)
+            std = self._portfolio_std(weights, self.cov)
+            return_over_risk = self._return_over_risk(weights, self.mean, self.cov)
+            sharpe_ratio = self._sharpe_ratio(weights, self.mean, self.cov)
             portfolio_list.append([id, weights, returns, std, return_over_risk, sharpe_ratio])
 
         return pd.DataFrame(portfolio_list,
@@ -106,7 +109,7 @@ class Portfolio:
             .set_index('id')
 
     def optimal_portfolio(self, method="monte-carlo", optimization="sharpe-ratio", simulations=20000):
-        #TODO: 
+        #TODO:
         if method == 'monte-carlo':
             optimal_weights = self._optimal_weights_monte_carlo(optimization=optimization, simulations=simulations)
         elif method == 'SQP':
@@ -114,12 +117,14 @@ class Portfolio:
         else:
             raise Exception('Please choose a valid method')
 
-        returns = self._portfolio_returns(optimal_weights, self.hist_data.mean)
-        std = self._portfolio_std(optimal_weights, self.hist_data.cov)
-        return_over_risk = self._return_over_risk(optimal_weights, self.hist_data.mean, self.hist_data.cov)
-        sharpe_ratio = self._sharpe_ratio(optimal_weights, self.hist_data.mean, self.hist_data.cov)
+        returns = self._portfolio_returns(optimal_weights, self.mean)
+        std = self._portfolio_std(optimal_weights, self.cov)
+        return_over_risk = self._return_over_risk(optimal_weights, self.mean, self.cov)
+        sharpe_ratio = self._sharpe_ratio(optimal_weights, self.mean, self.cov)
 
-        return {'optimal weights': list(optimal_weights), 'returns': returns, 'std': std,
+        return {'optimization_type': optimization, 'optimization_method': method,
+                'portfolio_weights': pd.Series(optimal_weights, index=self.securities).to_json(),
+                'returns': returns, 'std': std,
                 'return_over_risk': return_over_risk, 'sharpe_ratio': sharpe_ratio}
 
     @staticmethod

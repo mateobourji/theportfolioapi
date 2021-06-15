@@ -14,12 +14,11 @@ from math import sqrt
 from app.core.external_data_interface import Financial_Data
 
 
-class Hist_Data:
+class Hist_Data(Financial_Data):
     def __init__(self, securities, provider="YF", start="2000-01-01", end=datetime.date.today(), corr_method='pearson'):
+        super().__init__(securities, provider, start, end)
         self._data = Financial_Data(securities=securities, provider=provider, start=start, end=end)
         self.securities = securities
-        self.prices = self._data.prices
-        self.dividends = self._data.dividends
         self.returns = self._calculate_returns()
         self.cum_returns = self._calculate_cum_returns()
         self.mean = self._calculate_mean()
