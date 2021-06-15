@@ -29,7 +29,7 @@ async def post_portfolio(params: PortfolioPOSTBodyParams,
 
 
 @router.get("/all", name="portfolio:get-all", status_code=HTTP_200_OK, response_model=List[PortfolioPublic])
-async def return_opt_portfolio(current_user: UserInDB = Depends(get_current_active_user),
+async def get_all_portfolios(current_user: UserInDB = Depends(get_current_active_user),
                                portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository)
                                                                               )) -> List[PortfolioPublic]:
     portfolios = await portfolio_repo.get_all_portfolios(user_id=current_user.id)
@@ -38,10 +38,28 @@ async def return_opt_portfolio(current_user: UserInDB = Depends(get_current_acti
 
 
 @router.get("/{portfolio_id}", name="portfolio:get-by-id", status_code=HTTP_200_OK, response_model=PortfolioPublic)
-async def return_opt_portfolio(portfolio_id: int,
+async def get_portfolio_by_id(portfolio_id: int,
                                current_user: UserInDB = Depends(get_current_active_user),
                                portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository)
                                                                               )) -> PortfolioPublic:
     portfolio = await portfolio_repo.get_portfolio_by_id(user_id=current_user.id, portfolio_id=portfolio_id)
+
+    if not portfolio:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No portfolio with that id for this user "
+                                                                   "in the database.")
+
+    return PortfolioPublic(**portfolio.dict())
+
+
+@router.delete("/{portfolio_id}", name="portfolio:delete-by-id", status_code=HTTP_200_OK, response_model=PortfolioPublic)
+async def delete_portfolio_by_id(portfolio_id: int,
+                               current_user: UserInDB = Depends(get_current_active_user),
+                               portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository)
+                                                                              )) -> PortfolioPublic:
+    portfolio = await portfolio_repo.delete_portfolio_by_id(user_id=current_user.id, portfolio_id=portfolio_id)
+
+    if not portfolio:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No portfolio with that id for this user "
+                                                                   "in the database.")
 
     return PortfolioPublic(**portfolio.dict())

@@ -27,6 +27,13 @@ GET_PORTFOLIO_BY_ID_QUERY = """
     WHERE (user_id = :user_id) AND (id = :portfolio_id);
     """
 
+DELETE_PORTFOLIO_BY_ID_QUERY = """
+    DELETE FROM portfolios 
+    WHERE (user_id = :user_id) AND (id = :portfolio_id)
+    RETURNING id, user_id, portfolio_weights, returns, std, sharpe_ratio, return_over_risk, 
+    optimization_type, optimization_method, added_at, updated_at;
+    """
+
 
 GET_EQUITIES_QUERY = """
     SELECT ticker, name, country, sector, industry, exchange
@@ -61,9 +68,22 @@ class PortfoliosRepository(BaseRepository):
 
         return [PortfolioInDB(**portfolio) for portfolio in portfolios]
 
-    async def get_portfolio_by_id(self, user_id: int, portfolio_id: int) -> PortfolioInDB:
+    async def get_portfolio_by_id(self, user_id: int, portfolio_id: int) -> Optional[PortfolioInDB]:
 
         portfolio = await self.db.fetch_one(query=GET_PORTFOLIO_BY_ID_QUERY, values={'user_id': user_id,
                                                                                      'portfolio_id': portfolio_id})
+
+        if not portfolio:
+            return None
+
+        return PortfolioInDB(**portfolio)
+
+    async def delete_portfolio_by_id(self, user_id: int, portfolio_id: int) -> Optional[PortfolioInDB]:
+
+        portfolio = await self.db.fetch_one(query=DELETE_PORTFOLIO_BY_ID_QUERY, values={'user_id': user_id,
+                                                                                     'portfolio_id': portfolio_id})
+
+        if not portfolio:
+            return None
 
         return PortfolioInDB(**portfolio)
