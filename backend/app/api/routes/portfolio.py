@@ -15,25 +15,33 @@ import json
 router = APIRouter()
 
 
-# @router.get("/", name="data:download-portfolio", status_code=HTTP_200_OK, response_model=PortfolioPublic)
-# async def return_opt_portfolio(q: List[str] = Query(..., title="List of securities", min_length=2),
-#                                start: Optional[datetime.date] = "2000-01-01",
-#                                end: Optional[datetime.date] = datetime.date.today()) -> PortfolioPublic:
-#     check_tickers(q)
-#     portfolio = Portfolio(securities=q, start=start, end=end)
-#
-#     return PortfolioPublic(**portfolio.optimal_portfolio())
-
-
-@router.post("/", name="portfolio:post", status_code=HTTP_200_OK, response_model=PortfolioPublic)
+@router.post("/create", name="portfolio:post", status_code=HTTP_201_CREATED, response_model=PortfolioPublic)
 async def post_portfolio(params: PortfolioPOSTBodyParams,
                          current_user: UserInDB = Depends(get_current_active_user),
                          portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository))
                          ) -> PortfolioPublic:
-
     check_tickers(params.securities)
     optimal_portfolio = Portfolio(**params.dict()).optimal_portfolio()
     new_portfolio = PortfolioCreate(user_id=current_user.id, **optimal_portfolio)
     portfolio = await portfolio_repo.add_portfolio(new_portfolio=new_portfolio)
+
+    return PortfolioPublic(**portfolio.dict())
+
+
+@router.get("/all", name="portfolio:get-all", status_code=HTTP_200_OK, response_model=List[PortfolioPublic])
+async def return_opt_portfolio(current_user: UserInDB = Depends(get_current_active_user),
+                               portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository)
+                                                                              )) -> List[PortfolioPublic]:
+    portfolios = await portfolio_repo.get_all_portfolios(user_id=current_user.id)
+
+    return [PortfolioPublic(**portfolio.dict()) for portfolio in portfolios]
+
+
+@router.get("/{portfolio_id}", name="portfolio:get-by-id", status_code=HTTP_200_OK, response_model=PortfolioPublic)
+async def return_opt_portfolio(portfolio_id: int,
+                               current_user: UserInDB = Depends(get_current_active_user),
+                               portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository)
+                                                                              )) -> PortfolioPublic:
+    portfolio = await portfolio_repo.get_portfolio_by_id(user_id=current_user.id, portfolio_id=portfolio_id)
 
     return PortfolioPublic(**portfolio.dict())

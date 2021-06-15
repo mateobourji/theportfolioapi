@@ -47,11 +47,15 @@ class PortfolioInDB(PortfolioBase):
 
 class PortfolioPublic(CoreModel):
     """Instances of securities registered in database."""
+    id: int
+    user_id: int
     portfolio_weights: str
     returns: float
     std: float
     sharpe_ratio: float
     return_over_risk: float
+    added_at: datetime
+    updated_at: datetime
 
 
 class PortfolioPOSTBodyParams(CoreModel):

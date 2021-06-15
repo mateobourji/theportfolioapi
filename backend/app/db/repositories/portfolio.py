@@ -12,12 +12,21 @@ ADD_PORTFOLIO_QUERY = """
     optimization_type, optimization_method, added_at, updated_at;
     """
 
-GET_SECURITIES_QUERY = """
-    SELECT ticker, type 
-    FROM securities
-    WHERE ((ticker = ANY(:tickers)) OR (:tickers IS NULL))
-    ORDER BY ticker asc;
+GET_ALL_PORTFOLIOS_QUERY = """
+    SELECT id, user_id, portfolio_weights, returns, std, sharpe_ratio, return_over_risk, 
+    optimization_type, optimization_method, added_at, updated_at
+    FROM portfolios
+    WHERE (user_id = :user_id)
+    ORDER BY id asc;
     """
+
+GET_PORTFOLIO_BY_ID_QUERY = """
+    SELECT id, user_id, portfolio_weights, returns, std, sharpe_ratio, return_over_risk, 
+    optimization_type, optimization_method, added_at, updated_at
+    FROM portfolios
+    WHERE (user_id = :user_id) AND (id = :portfolio_id);
+    """
+
 
 GET_EQUITIES_QUERY = """
     SELECT ticker, name, country, sector, industry, exchange
@@ -43,5 +52,18 @@ class PortfoliosRepository(BaseRepository):
     async def add_portfolio(self, *, new_portfolio: PortfolioCreate) -> PortfolioInDB:
 
         portfolio = await self.db.fetch_one(query=ADD_PORTFOLIO_QUERY, values=vars(new_portfolio))
+
+        return PortfolioInDB(**portfolio)
+
+    async def get_all_portfolios(self, user_id: int) -> List[PortfolioInDB]:
+
+        portfolios = await self.db.fetch_all(query=GET_ALL_PORTFOLIOS_QUERY, values={'user_id':user_id})
+
+        return [PortfolioInDB(**portfolio) for portfolio in portfolios]
+
+    async def get_portfolio_by_id(self, user_id: int, portfolio_id: int) -> PortfolioInDB:
+
+        portfolio = await self.db.fetch_one(query=GET_PORTFOLIO_BY_ID_QUERY, values={'user_id': user_id,
+                                                                                     'portfolio_id': portfolio_id})
 
         return PortfolioInDB(**portfolio)

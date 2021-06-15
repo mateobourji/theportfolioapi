@@ -69,6 +69,18 @@ async def test_user(db: Database) -> UserInDB:
         return existing_user
     return await user_repo.register_new_user(new_user=new_user)
 
+@pytest.fixture
+async def test_user_new(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="shakira@hips.com",
+        username="shakira",
+        password="shark-ira",
+    )
+    user_repo = UsersRepository(db)
+    existing_user = await user_repo.get_user_by_email(email=new_user.email)
+    if existing_user:
+        return existing_user
+    return await user_repo.register_new_user(new_user=new_user)
 
 @pytest.fixture
 def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
@@ -79,6 +91,15 @@ def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
     }
     return client
 
+
+@pytest.fixture
+def authorized_client_new(client: AsyncClient, test_user_new: UserInDB) -> AsyncClient:
+    access_token = auth_service.create_access_token_for_user(user=test_user_new, secret_key=str(SECRET_KEY))
+    client.headers = {
+        **client.headers,
+        "Authorization": f"{JWT_TOKEN_PREFIX} {access_token}",
+    }
+    return client
 
 @pytest.fixture
 async def test_equities1(db: Database) -> List[EquityInDB]:

@@ -108,9 +108,7 @@ class TestCreateTicker:
     async def test_invalid_input_raises_error(
             self, app: FastAPI, client: AsyncClient, invalid_payload: dict, status_code: int
     ) -> None:
-        res = await client.post(
-            app.url_path_for("admin:add-tickers"), json={"new_ticker": invalid_payload}
-        )
+        res = await client.post(app.url_path_for("admin:add-tickers"), json={"new_ticker": invalid_payload})
         assert res.status_code == status_code
 
 
