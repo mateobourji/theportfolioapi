@@ -191,6 +191,29 @@ def create_users_table() -> None:
         """
     )
 
+def create_portfolios_table() -> None:
+    op.create_table(
+        "portfolios",
+        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("user_id", sa.Integer, sa.ForeignKey('users.id'), nullable=False, index=True, ),
+        sa.Column("portfolio_weights", sa.JSON, nullable=False),
+        sa.Column("returns", sa.Float, nullable=False),
+        sa.Column("std", sa.Float, nullable=False),
+        sa.Column("sharpe_ratio", sa.Float, nullable=False),
+        sa.Column("return_over_risk", sa.Float, nullable=False),
+        sa.Column("optimization_type", sa.Text, nullable=False),
+        sa.Column("optimization_method", sa.Text, nullable=False),
+        *timestamps(),
+    )
+    op.execute(
+        """
+        CREATE TRIGGER update_portfolio_modtime
+            BEFORE UPDATE
+            ON users
+            FOR EACH ROW
+        EXECUTE PROCEDURE update_updated_at_column();
+        """
+    )
 
 def upgrade() -> None:
     create_updated_at_trigger()
@@ -200,13 +223,15 @@ def upgrade() -> None:
     create_equities_table()
     create_ETFs_table()
     create_users_table()
+    create_portfolios_table()
 
 
 def downgrade() -> None:
-    op.drop_table("users")
     op.drop_table('securities')
     op.drop_table("equities")
     op.drop_table("etfs")
+    op.drop_table("portfolios")
+    op.drop_table("users")
     op.execute("DROP FUNCTION update_updated_at_column")
     op.execute("DROP FUNCTION insert_equity_into_securities()")
     op.execute("DROP FUNCTION insert_ETF_into_securities()")
