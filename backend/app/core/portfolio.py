@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize, Bounds
-from backend.app.core.historical_data import Hist_Data
+from app.core.historical_data import Hist_Data
 import datetime
 
 

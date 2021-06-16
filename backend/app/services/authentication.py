@@ -2,9 +2,9 @@ import jwt
 import bcrypt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
-from backend.app.core.config import SECRET_KEY, JWT_ALGORITHM, JWT_AUDIENCE, JWT_TOKEN_PREFIX, ACCESS_TOKEN_EXPIRE_MINUTES
-from backend.app.models.token import JWTMeta, JWTCreds, JWTPayload
-from backend.app.models.user import UserPasswordUpdate, UserInDB
+from app.core.config import SECRET_KEY, JWT_ALGORITHM, JWT_AUDIENCE, JWT_TOKEN_PREFIX, ACCESS_TOKEN_EXPIRE_MINUTES
+from app.models.token import JWTMeta, JWTCreds, JWTPayload
+from app.models.user import UserPasswordUpdate, UserInDB
 from typing import Optional
 from fastapi import HTTPException, status
 from pydantic import ValidationError

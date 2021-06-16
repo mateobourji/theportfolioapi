@@ -1,7 +1,7 @@
 from typing import List, Optional
-from backend.app.db.repositories.base import BaseRepository
-from backend.app.models.portfolio import PortfolioCreate, PortfolioInDB
-from backend.app.core.portfolio import Portfolio
+from app.db.repositories.base import BaseRepository
+from app.models.portfolio import PortfolioCreate, PortfolioInDB
+from app.core.portfolio import Portfolio
 
 ADD_PORTFOLIO_QUERY = """
     INSERT INTO portfolios (user_id, portfolio_weights, returns, std, sharpe_ratio, return_over_risk, 

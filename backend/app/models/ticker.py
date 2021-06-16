@@ -1,5 +1,5 @@
 from typing import List
-from backend.app.models.core import CoreModel
+from app.models.core import CoreModel
 
 
 class TickerBase(CoreModel):

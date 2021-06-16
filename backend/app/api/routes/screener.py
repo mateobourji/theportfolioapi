@@ -1,12 +1,10 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
-from backend.app.models.equity import EquityQueryParams, EquityPublic
-from backend.app.models.etf import ETFQueryParams, ETFPublic
-from backend.app.db.repositories.assets import SecuritiesRepository
-from backend.app.api.dependencies.database import get_repository
-from backend.app.models.user import UserInDB
-from backend.app.api.dependencies.auth import get_current_active_user
+from app.models.equity import EquityQueryParams, EquityPublic
+from app.models.etf import ETFQueryParams, ETFPublic
+from app.db.repositories.assets import SecuritiesRepository
+from app.api.dependencies.database import get_repository
 
 router = APIRouter()
 
@@ -30,7 +28,6 @@ async def get_equities(params: EquityQueryParams = Depends(),
 async def get_etfs(params: ETFQueryParams = Depends(),
                    tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                    ) -> List[ETFPublic]:
-
     etfs = await tickers_repo.get_etf(params=params)
 
     if not etfs:

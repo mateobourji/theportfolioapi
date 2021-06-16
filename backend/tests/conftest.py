@@ -8,13 +8,13 @@ from databases import Database
 import alembic
 from alembic.config import Config
 from typing import List
-from backend.app.models.user import UserCreate, UserInDB
-from backend.app.db.repositories.users import UsersRepository
-from backend.app.models.ticker import TickerInDB
-from backend.app.models.equity import EquityCreate, EquityInDB
-from backend.app.db.repositories.assets import SecuritiesRepository
-from backend.app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
-from backend.app.services import auth_service
+from app.models.user import UserCreate, UserInDB
+from app.db.repositories.users import UsersRepository
+from app.models.ticker import TickerInDB
+from app.models.equity import EquityCreate, EquityInDB
+from app.db.repositories.assets import SecuritiesRepository
+from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
+from app.services import auth_service
 
 
 # Apply migrations at beginning and end of testing session
@@ -31,14 +31,14 @@ def apply_migrations():
 # Create a new application for testing
 @pytest.fixture
 def app(apply_migrations: None) -> FastAPI:
-    from backend.app.api.server import get_application
+    from app.api.server import get_application
     return get_application()
 
 
 # Grab a reference to our database when needed
 @pytest.fixture
 def db(app: FastAPI) -> Database:
-    return backend.app.state._db
+    return app.state._db
 
 
 # Make requests in our tests

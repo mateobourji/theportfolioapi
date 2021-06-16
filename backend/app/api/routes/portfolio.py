@@ -1,15 +1,15 @@
 from typing import List, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
-from backend.app.core.external_data_interface import Financial_Data
+from app.core.external_data_interface import Financial_Data
 import datetime
-from backend.app.core.check_tickers import check_tickers
-from backend.app.db.repositories.portfolio import PortfoliosRepository
-from backend.app.core.portfolio import Portfolio
-from backend.app.models.user import UserInDB
-from backend.app.models.portfolio import PortfolioCreate, PortfolioInDB, PortfolioPublic, PortfolioPOSTBodyParams
-from backend.app.api.dependencies.auth import get_current_active_user
-from backend.app.api.dependencies.database import get_repository
+from app.core.check_tickers import check_tickers
+from app.db.repositories.portfolio import PortfoliosRepository
+from app.core.portfolio import Portfolio
+from app.models.user import UserInDB
+from app.models.portfolio import PortfolioCreate, PortfolioInDB, PortfolioPublic, PortfolioPOSTBodyParams
+from app.api.dependencies.auth import get_current_active_user
+from app.api.dependencies.database import get_repository
 import json
 
 router = APIRouter()

@@ -1,9 +1,9 @@
 from typing import List, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
-from backend.app.models.ticker import TickerPublic
-from backend.app.db.repositories.assets import SecuritiesRepository
-from backend.app.api.dependencies.database import get_repository
+from app.models.ticker import TickerPublic
+from app.db.repositories.assets import SecuritiesRepository
+from app.api.dependencies.database import get_repository
 
 router = APIRouter()
 

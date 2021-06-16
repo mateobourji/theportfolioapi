@@ -1,4 +1,4 @@
-from backend.app.models.core import CoreModel
+from app.models.core import CoreModel
 from typing import Optional, List
 from fastapi import Query
 from typing import TypeVar

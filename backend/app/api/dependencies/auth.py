@@ -1,11 +1,11 @@
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from backend.app.core.config import SECRET_KEY, API_PREFIX
-from backend.app.models.user import UserInDB
-from backend.app.api.dependencies.database import get_repository
-from backend.app.db.repositories.users import UsersRepository
-from backend.app.services import auth_service
+from app.core.config import SECRET_KEY, API_PREFIX
+from app.models.user import UserInDB
+from app.api.dependencies.database import get_repository
+from app.db.repositories.users import UsersRepository
+from app.services import auth_service
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{API_PREFIX}/users/login/token/")
 

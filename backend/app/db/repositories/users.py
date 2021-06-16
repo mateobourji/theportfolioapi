@@ -2,9 +2,9 @@ from pydantic import EmailStr
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
 from databases import Database
-from backend.app.db.repositories.base import BaseRepository
-from backend.app.models.user import UserCreate, UserUpdate, UserInDB
-from backend.app.services import auth_service
+from app.db.repositories.base import BaseRepository
+from app.models.user import UserCreate, UserUpdate, UserInDB
+from app.services import auth_service
 from typing import Optional
 
 GET_USER_BY_EMAIL_QUERY = """
