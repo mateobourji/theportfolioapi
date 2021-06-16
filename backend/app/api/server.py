@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.core import config, tasks
-from backend.app.api.routes import router as api_router
+from app.core import config, tasks
+from app.api.routes import router as api_router
 
 
 def get_application():
