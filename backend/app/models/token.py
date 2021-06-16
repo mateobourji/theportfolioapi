@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from pydantic import EmailStr
-from app.core.config import JWT_AUDIENCE, ACCESS_TOKEN_EXPIRE_MINUTES
-from app.models.core import CoreModel
+from backend.app.core.config import JWT_AUDIENCE, ACCESS_TOKEN_EXPIRE_MINUTES
+from backend.app.models.core import CoreModel
 
 
 class JWTMeta(CoreModel):

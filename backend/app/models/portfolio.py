@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import List, Optional, Any
 from pydantic import Json, validator, BaseModel
-from app.models.core import CoreModel
+from backend.app.models.core import CoreModel
 from pydantic.datetime_parse import parse_date, get_numeric
 
 def validate_date(v: Any) -> date:

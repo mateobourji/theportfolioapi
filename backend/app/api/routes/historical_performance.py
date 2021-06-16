@@ -2,10 +2,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.responses import StreamingResponse, FileResponse, HTMLResponse
-from app.core.historical_data import Hist_Data, Hist_Data_Plot
+from backend.app.core.historical_data import Hist_Data, Hist_Data_Plot
 import datetime
-from app.core.check_tickers import check_tickers
-from app.models.historical_performance import HistoricalPerformancePublic
+from backend.app.core.check_tickers import check_tickers
+from backend.app.models.historical_performance import HistoricalPerformancePublic
 import matplotlib.pyplot as plt
 from bokeh.plotting import figure, output_file, show, save
 import codecs

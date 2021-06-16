@@ -5,12 +5,12 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
 )
 
-from app.api.dependencies.auth import get_current_active_user
-from app.api.dependencies.database import get_repository
-from app.db.repositories.users import UsersRepository
-from app.models.token import AccessToken
-from app.models.user import UserCreate, UserInDB, UserPublic
-from app.services import auth_service
+from backend.app.api.dependencies.auth import get_current_active_user
+from backend.app.api.dependencies.database import get_repository
+from backend.app.db.repositories.users import UsersRepository
+from backend.app.models.token import AccessToken
+from backend.app.models.user import UserCreate, UserInDB, UserPublic
+from backend.app.services import auth_service
 
 router = APIRouter()
 

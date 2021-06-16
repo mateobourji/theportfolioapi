@@ -1,10 +1,10 @@
 from typing import List, Optional
-from app.db.repositories.base import BaseRepository
-from app.models.ticker import TickerPublic
-from app.models.equity import EquityCreate, EquityInDB, EquityQueryParams, EquityPublic
-from app.models.etf import ETFCreate, ETFInDB, ETFQueryParams, ETFPublic
+from backend.app.db.repositories.base import BaseRepository
+from backend.app.models.ticker import TickerPublic
+from backend.app.models.equity import EquityCreate, EquityInDB, EquityQueryParams, EquityPublic
+from backend.app.models.etf import ETFCreate, ETFInDB, ETFQueryParams, ETFPublic
 import numpy as np
-from app.core.external_data_interface import Ticker_Data
+from backend.app.core.external_data_interface import Ticker_Data
 
 ADD_EQUITY_QUERY = """
     INSERT INTO equities (ticker, name, country, sector, industry, exchange)

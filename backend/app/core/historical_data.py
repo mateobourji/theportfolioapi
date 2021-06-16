@@ -11,7 +11,7 @@ from bokeh.transform import transform
 from numpy import log
 from math import sqrt
 
-from app.core.external_data_interface import Financial_Data
+from backend.app.core.external_data_interface import Financial_Data
 
 
 class Hist_Data(Financial_Data):
