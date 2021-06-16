@@ -4,6 +4,6 @@ build:
 release:
   command:
     - alembic upgrade head
-  image: /backend/Dockerfile
+  image: web
 run:
   web: uvicorn app.api.server:app --reload --workers 1 --host 0.0.0.0 --port $PORT
