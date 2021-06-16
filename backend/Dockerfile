@@ -8,6 +8,6 @@ RUN apt-get update \
   && apt-get clean
 # install python dependencies
 RUN pip install --upgrade pip
-COPY ./requirements.txt /backend/requirements.txt
+COPY ../requirements.txt /backend/requirements.txt
 RUN pip install -r requirements.txt
 COPY . /backend
