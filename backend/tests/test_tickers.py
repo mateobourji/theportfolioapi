@@ -47,49 +47,49 @@ def test_equities_ticker_filter():
 
 
 class TestTickersRoutes:
-    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, test_tickers: List[str]) -> None:
-        res = await client.post(app.url_path_for("admin:add-tickers"), json=test_tickers)
+    async def test_routes_exist(self, app: FastAPI, authorized_client: AsyncClient, test_tickers: List[str]) -> None:
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json=test_tickers)
         assert res.status_code != HTTP_404_NOT_FOUND
 
-    async def test_invalid_input_raises_error(self, app: FastAPI, client: AsyncClient) -> None:
-        res = await client.post(app.url_path_for("admin:add-tickers"), json="INVALID")
+    async def test_invalid_input_raises_error(self, app: FastAPI, authorized_client: AsyncClient) -> None:
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json="INVALID")
         assert res.status_code == HTTP_422_UNPROCESSABLE_ENTITY
 
 
 class TestCreateTicker:
-    async def test_valid_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers2: List[str]
+    async def test_valid_input_creates_ticker(self, app: FastAPI, authorized_client: AsyncClient, test_tickers2: List[str]
                                               ) -> None:
-        res = await client.post(app.url_path_for("admin:add-tickers"), json=test_tickers2)
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json=test_tickers2)
         assert res.status_code == HTTP_201_CREATED
 
         created_ticker = [ticker['ticker'] for ticker in res.json()]
         assert created_ticker == test_tickers2
 
-    async def test_valid_etf_input_creates_ticker(self, app: FastAPI, client: AsyncClient, test_tickers4: List[str]
+    async def test_valid_etf_input_creates_ticker(self, app: FastAPI, authorized_client: AsyncClient, test_tickers4: List[str]
                                                   ) -> None:
-        res = await client.post(app.url_path_for("admin:add-tickers"), json=test_tickers4)
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json=test_tickers4)
         assert res.status_code == HTTP_201_CREATED
 
         created_ticker = [ticker['ticker'] for ticker in res.json()]
 
         assert created_ticker == test_tickers4
 
-    async def test_repeated_input_returns_empty_list(self, app: FastAPI, client: AsyncClient, test_tickers2: List[str]
+    async def test_repeated_input_returns_empty_list(self, app: FastAPI, authorized_client: AsyncClient, test_tickers2: List[str]
                                                      ) -> None:
         # If tickers are already in db, API should return empty list.
-        res = await client.post(app.url_path_for("admin:add-tickers"), json=test_tickers2)
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json=test_tickers2)
         assert res.status_code == HTTP_404_NOT_FOUND
 
-    async def test_invalid_ticker(self, app: FastAPI, client: AsyncClient, invalid_tickers: List[str]) -> None:
+    async def test_invalid_ticker(self, app: FastAPI, authorized_client: AsyncClient, invalid_tickers: List[str]) -> None:
         # If tickers are invalid, API should return empty list.
-        res = await client.post(app.url_path_for("admin:add-tickers"), json=invalid_tickers)
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json=invalid_tickers)
         assert res.status_code == HTTP_404_NOT_FOUND
 
-    async def test_partial_repeated_input_returns_partial_creation(self, app: FastAPI, client: AsyncClient,
+    async def test_partial_repeated_input_returns_partial_creation(self, app: FastAPI, authorized_client: AsyncClient,
                                                                    test_tickers3: List[str]) -> None:
         # If part of tickers already in db, API should return only newly created tickers not previously in db
 
-        res = await client.post(app.url_path_for("admin:add-tickers"), json=test_tickers3)
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json=test_tickers3)
         assert res.status_code == HTTP_201_CREATED
 
         created_ticker = [ticker['ticker'] for ticker in res.json()]
@@ -106,19 +106,19 @@ class TestCreateTicker:
         ),
     )
     async def test_invalid_input_raises_error(
-            self, app: FastAPI, client: AsyncClient, invalid_payload: dict, status_code: int
+            self, app: FastAPI, authorized_client: AsyncClient, invalid_payload: dict, status_code: int
     ) -> None:
-        res = await client.post(app.url_path_for("admin:add-tickers"), json={"new_ticker": invalid_payload})
+        res = await authorized_client.post(app.url_path_for("admin:add-tickers"), json={"new_ticker": invalid_payload})
         assert res.status_code == status_code
 
 
 class TestGetSecurity:
     # TODO: ticker_list based on tickers in conftest, not tickers added to db in previous tests
     async def test_valid_input_gets_ticker(
-            self, app: FastAPI, client: AsyncClient, ticker_list: List[str]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, ticker_list: List[str]) -> None:
         params = {'q': [ticker_list[0], ticker_list[1]]}
 
-        res = await client.get(app.url_path_for("admin:get-tickers"), params=params)
+        res = await authorized_client.get(app.url_path_for("admin:get-tickers"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -137,15 +137,15 @@ class TestGetSecurity:
         ),
     )
     async def test_invalid_input_raises_error(
-            self, app: FastAPI, client: AsyncClient, invalid_ticker_list: List[str], status_code: int) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, invalid_ticker_list: List[str], status_code: int) -> None:
         params = {'q': ticker_list}
 
-        res = await client.get(app.url_path_for("admin:get-tickers"), params=params)
+        res = await authorized_client.get(app.url_path_for("admin:get-tickers"), params=params)
         assert res.status_code == status_code
 
     async def test_get_all_securities_returns_valid_response(
-            self, app: FastAPI, client: AsyncClient, ticker_list: List[str]) -> None:
-        res = await client.get(app.url_path_for("admin:get-tickers"))
+            self, app: FastAPI, authorized_client: AsyncClient, ticker_list: List[str]) -> None:
+        res = await authorized_client.get(app.url_path_for("admin:get-tickers"))
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -158,9 +158,9 @@ class TestGetSecurity:
 
 class TestGetEquity:
     async def test_valid_ticker_filter_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         params = {'tickers': [test_equities1[0].ticker, test_equities1[1].ticker]}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -169,10 +169,10 @@ class TestGetEquity:
         assert all(equity in equities_in_db for equity in test_equities1[0:2])
 
     async def test_valid_country_filter_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         country_filter = ["United Kingdom"]
         params = {'countries': country_filter}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -182,10 +182,10 @@ class TestGetEquity:
                    [equity for equity in test_equities1 if equity.country in country_filter])
 
     async def test_valid_sector_filter_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         sector_filter = ["Technology", "Consumer Cyclical"]
         params = {'sectors': sector_filter}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -195,10 +195,10 @@ class TestGetEquity:
                    [equity for equity in test_equities1 if equity.sector in sector_filter])
 
     async def test_valid_industry_filter_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         industry_filter = ["Entertainment", "Oil & Gas Integrated"]
         params = {'industry': industry_filter}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -208,10 +208,10 @@ class TestGetEquity:
                    [equity for equity in test_equities1 if equity.industry in industry_filter])
 
     async def test_valid_exchange_filter_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         exchange_filter = ["NMS"]
         params = {'exchange': exchange_filter}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -221,10 +221,10 @@ class TestGetEquity:
                    [equity for equity in test_equities1 if equity.country in exchange_filter])
 
     async def test_valid_name_filter_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         name_filter = ["Netflix, Inc."]
         params = {'name': name_filter}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -234,11 +234,11 @@ class TestGetEquity:
                    [equity for equity in test_equities1 if equity.name in name_filter])
 
     async def test_valid_sector_and_industries_filters_gets_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         sector_filter = ["Technology"]
         industry_filter = ["Communication Equipment"]
         params = {'sectors': sector_filter, 'industries': industry_filter}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -249,8 +249,8 @@ class TestGetEquity:
                     if equity.industry in industry_filter])
 
     async def test_no_filters_gets_all_equities(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
-        res = await client.get(app.url_path_for("screener:get-equities"))
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"))
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -267,18 +267,18 @@ class TestGetEquity:
                 ("exchanges", ["CAC", "FLO"], 404)
         ),
     )
-    async def test_invalid_input_raises_error(self, app: FastAPI, client: AsyncClient, filters: str,
+    async def test_invalid_input_raises_error(self, app: FastAPI, authorized_client: AsyncClient, filters: str,
                                               parameters: List[str], status_code: int) -> None:
         params = {filters: parameters}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == status_code
 
 
 class TestGetETF:
     async def test_valid_request_gets_etfs(
-            self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+            self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
         params = {'tickers': [test_equities1[0].ticker, test_equities1[1].ticker]}
-        res = await client.get(app.url_path_for("screener:get-equities"), params=params)
+        res = await authorized_client.get(app.url_path_for("screener:get-equities"), params=params)
         assert res.status_code == HTTP_200_OK
         assert isinstance(res.json(), list)
         assert len(res.json()) > 0
@@ -289,9 +289,9 @@ class TestGetETF:
 
 # class TestGetETF:
 #     async def test_valid_ticker_filter_gets_equities(
-#             self, app: FastAPI, client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
+#             self, app: FastAPI, authorized_client: AsyncClient, test_equities1: List[EquityInDB]) -> None:
 #         params = {'tickers': [test_equities1[0].ticker, test_equities1[1].ticker]}
-#         res = await client.get(app.url_path_for("equities:get-equities"), params=params)
+#         res = await authorized_client.get(app.url_path_for("equities:get-equities"), params=params)
 #         assert res.status_code == HTTP_200_OK
 #         assert isinstance(res.json(), list)
 #         assert len(res.json()) > 0

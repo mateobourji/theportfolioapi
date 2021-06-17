@@ -5,13 +5,18 @@ from app.models.equity import EquityQueryParams, EquityPublic
 from app.models.etf import ETFQueryParams, ETFPublic
 from app.db.repositories.assets import SecuritiesRepository
 from app.api.dependencies.database import get_repository
+from app.api.dependencies.auth import get_current_active_user
+from app.models.user import UserInDB
 
 router = APIRouter()
 
 
-@router.get("/equities/", name="screener:get-equities", response_model=List[EquityPublic],
-            status_code=HTTP_200_OK)
-async def get_equities(params: EquityQueryParams = Depends(),
+@router.get("/equities/", name="screener:get-equities", status_code=HTTP_200_OK,
+            response_model=List[EquityPublic],
+            response_description="Returns an array of equities that meet the filter criteria. If no filters are "
+                                 "selected, returns all equities in the database.")
+async def get_equities(current_user: UserInDB = Depends(get_current_active_user),
+                       params: EquityQueryParams = Depends(),
                        tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                        ) -> List[EquityPublic]:
     equities = await tickers_repo.get_equities_by_ticker(params=params)
@@ -24,8 +29,12 @@ async def get_equities(params: EquityQueryParams = Depends(),
     return equities
 
 
-@router.get("/ETFs/", name="screener:get-ETFs", response_model=List[ETFPublic], status_code=HTTP_200_OK)
-async def get_etfs(params: ETFQueryParams = Depends(),
+@router.get("/ETFs/", name="screener:get-ETFs", status_code=HTTP_200_OK,
+            response_model=List[ETFPublic],
+            response_description="Returns an array of ETFs that meet the filter criteria. If no filters are "
+                                 "selected, returns all ETFs in the database.")
+async def get_etfs(current_user: UserInDB = Depends(get_current_active_user),
+                   params: ETFQueryParams = Depends(),
                    tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                    ) -> List[ETFPublic]:
     etfs = await tickers_repo.get_etf(params=params)
