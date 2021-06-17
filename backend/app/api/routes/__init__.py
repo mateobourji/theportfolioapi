@@ -6,9 +6,8 @@ from app.api.routes.admin import router as asset_router
 from app.api.routes.users import router as user_router
 router = APIRouter()
 
-
-router.include_router(screener_router, prefix="/screener", tags=["screener"])
-router.include_router(download_router, prefix="/historical-performance", tags=["historical performance"])
-router.include_router(portfolio_router, prefix="/portfolio", tags=["portfolio"])
-router.include_router(asset_router, prefix="/admin", tags=["admin"])
-router.include_router(user_router, prefix="/users", tags=["users"])
+router.include_router(user_router, prefix="/authentication", tags=["Authentication"])
+router.include_router(screener_router, prefix="/screener", tags=["Screening"])
+router.include_router(download_router, prefix="/analysis", tags=["Analysis"])
+router.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio"])
+router.include_router(asset_router, prefix="/admin")
