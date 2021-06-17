@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/tickers/", name="admin:add-tickers", response_model=List[TickerPublic],
-             status_code=HTTP_201_CREATED)
+             status_code=HTTP_201_CREATED, include_in_schema=False)
 async def add_tickers(ticker_list: List[str] = Body(..., title="List of Tickers"),
                       tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                       ) -> List[TickerPublic]:
@@ -25,7 +25,7 @@ async def add_tickers(ticker_list: List[str] = Body(..., title="List of Tickers"
 
 
 @router.get("/tickers/", name="admin:get-tickers", response_model=List[TickerPublic],
-            status_code=HTTP_200_OK)
+            status_code=HTTP_200_OK, include_in_schema=False)
 async def get_tickers(q: Optional[List[str]] = Query(None, title="List of tickers to filter."),
                       tickers_repo: SecuritiesRepository = Depends(get_repository(SecuritiesRepository))
                       ) -> List[TickerPublic]:

@@ -5,28 +5,30 @@ from starlette.datastructures import Secret
 config = Config(".env")
 PROJECT_NAME = "The Portfolio API"
 VERSION = "0.1.0"
-DESCRIPTION = "The Portfolio API is used to screen portfolio investments across multiple asset classes," \
-              " analyze historical performance data, and build portfolios through various optimization techniques."
+DESCRIPTION = "The Portfolio (REST) API is used to screen assets across multiple classes, generate quantitative and " \
+              "qualitative analysis of these assets, and build optimized portfolios."
 API_PREFIX = "/api"
 DOCS_URL = "/"
 TAGS_META = [
 {
-    "name": "screener",
-    "description": "Screen assets throughout different asset classes."
+    "name": "Authentication",
+    "description": "The Portfolio API uses OAuth2 and JWT to authenticate users. Please register or login to consume "
+                   "this API's endpoints. "
 },
 {
-    "name": "historical performance",
-    "description": "Get historical performance of a single assets or group of assets. Covers asset prices, dividends,"
-                   " returns, summary statistics (returns mean, std, skew, kurtosis) and joint summary statistics"
-                   " (returns correlation, covariance)."
+    "name": "Screening",
+    "description": "Screen assets across different asset classes based on quantitative attributes (such as % of equity"
+                   " holdings of ETFs) and qualitative attributes (such as industry or sector of equities)."
 },
 {
-    "name": "portfolio",
-    "description": "Build optimized portfolio."
+    "name": "Analysis",
+    "description": "Generate statistical analysis,"
+                   "quantitative and qualitative fundamental analysis of assets. "
 },
-    {
-    "name": "admin",
-    "description": "Add, update, and delete assets in the database."
+{
+    "name": "Portfolio",
+    "description": "Build optimized investment portfolios using modern portfolio theory optimization and monte"
+                   "carlo simulation."
 }
 ]
 
