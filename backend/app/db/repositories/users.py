@@ -62,9 +62,9 @@ class UsersRepository(BaseRepository):
 
         return UserInDB(**created_user)
 
-    async def authenticate_user(self, *, email: EmailStr, password: str) -> Optional[UserInDB]:
+    async def authenticate_user(self, *, username: str, password: str) -> Optional[UserInDB]:
         # make user user exists in db
-        user = await self.get_user_by_email(email=email)
+        user = await self.get_user_by_username(username=username)
         if not user:
             return None
         # if submitted password doesn't match
