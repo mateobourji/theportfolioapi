@@ -153,10 +153,10 @@ class TestUserLogin:
     ) -> None:
         client.headers["content-type"] = "application/x-www-form-urlencoded"
         login_data = {
-            "username": test_user.email,
+            "username": test_user.username,
             "password": "heatcavslakers",  # insert user's plaintext password
         }
-        res = await client.post(app.url_path_for("users:login-email-and-password"), data=login_data)
+        res = await client.post(app.url_path_for("users:login-username-and-password"), data=login_data)
         assert res.status_code == HTTP_200_OK
         # check that token exists in response and has user encoded within it
         token = res.json().get("access_token")
@@ -196,7 +196,7 @@ class TestUserLogin:
             "username": user_data["email"],
             "password": user_data["password"],  # insert password from parameters
         }
-        res = await client.post(app.url_path_for("users:login-email-and-password"), data=login_data)
+        res = await client.post(app.url_path_for("users:login-username-and-password"), data=login_data)
         assert res.status_code == status_code
         assert "access_token" not in res.json()
 
