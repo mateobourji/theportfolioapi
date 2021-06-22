@@ -1,9 +1,9 @@
 from fastapi import APIRouter
-from app.api.routes.historical_performance import router as download_router
+from app.api.routes.analysis import router as download_router
 from app.api.routes.portfolio import router as portfolio_router
-from app.api.routes.screener import router as screener_router
+from app.api.routes.screening import router as screener_router
 from app.api.routes.admin import router as asset_router
-from app.api.routes.users import router as user_router
+from app.api.routes.authentication import router as user_router
 router = APIRouter()
 
 router.include_router(user_router, prefix="/authentication", tags=["Authentication"])
