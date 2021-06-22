@@ -22,7 +22,7 @@ curl -X 'POST' \
   "new_user": {
     "email": "user@example.com",
     "password": "password123",
-    "username": "password123"
+    "username": "user"
   }
 }'
 ```
@@ -34,7 +34,7 @@ curl -X 'POST' \
   'http://theportfolioapi.com/api/authentication/login/token/' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'grant_type=&username=user%40example.com&password=strings'
+  -d 'grant_type=&username=user%40example.com&password=password123'
 ```
 
 Screen equities in the United States and in the Technology sector:  
