@@ -7,7 +7,7 @@ from app.api.dependencies.database import get_repository
 from app.db.repositories.users import UsersRepository
 from app.services import auth_service
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{API_PREFIX}/users/login/token/")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{API_PREFIX}/authentication/login/token/")
 
 
 async def get_user_from_token(

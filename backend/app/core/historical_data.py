@@ -1,12 +1,10 @@
 import datetime
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
 from bokeh.io import output_file
 from bokeh.layouts import row
 from bokeh.models import NumeralTickFormatter, ColumnDataSource, LinearColorMapper, ColorBar, BasicTicker
 from bokeh.models.tools import HoverTool
 from bokeh.plotting import figure, save
-from bokeh.palettes import Category20
+from bokeh.palettes import viridis
 from bokeh.transform import transform
 from numpy import log
 from math import sqrt
@@ -87,7 +85,7 @@ class Hist_Data_Plot():
         cum_returns.yaxis.formatter = NumeralTickFormatter(format='0 %')
 
         # Plotting
-        for security, color in zip(self.hist_data.securities, Category20[len(self.hist_data.securities)]):
+        for security, color in zip(self.hist_data.securities, viridis(len(self.hist_data.securities))):
             cum_returns.line(x='Date',
                              y=security,
                              source=self.hist_data.cum_returns,
@@ -141,7 +139,7 @@ class Hist_Data_Plot():
                              x_axis_location="below",
                              toolbar_location="below")
 
-        colors = Category20[5]
+        colors = viridis(5)
 
         mapper = LinearColorMapper(palette=colors, low=data.correlation.min(), high=data.correlation.max())
 
