@@ -2,7 +2,7 @@ import codecs
 import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Query
 from starlette.responses import HTMLResponse
 from starlette.status import HTTP_200_OK
 
@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.get("/statistics/data/", name="historical-performance:data", status_code=HTTP_200_OK,
             response_model=HistoricalPerformancePublic)
-async def historical_performance(q: List[str] = Query(..., title="List of securities"),
+async def historical_performance(q: List[str] = Query(..., title="List of securities", max_length=256),
                                  start: Optional[datetime.date] = "2000-01-01",
                                  end: Optional[datetime.date] = datetime.date.today()) -> HistoricalPerformancePublic:
     check_tickers(q)
@@ -24,7 +24,7 @@ async def historical_performance(q: List[str] = Query(..., title="List of securi
     return HistoricalPerformancePublic.parse_obj(vars(hist_data))
 
 @router.get("/statistics/graph/", name="historical-performance:graphs", status_code=HTTP_200_OK, response_class=HTMLResponse)
-async def historical_performance(q: List[str] = Query(..., title="List of securities"),
+async def historical_performance(q: List[str] = Query(..., title="List of securities", max_length=256),
                                  start: Optional[datetime.date] = "2000-01-01",
                                  end: Optional[datetime.date] = datetime.date.today()):
     check_tickers(q)
