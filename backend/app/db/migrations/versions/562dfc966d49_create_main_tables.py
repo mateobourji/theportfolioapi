@@ -6,6 +6,10 @@ Create Date: 2020-05-05 10:41:35.468471
 from typing import Tuple
 from alembic import op
 import sqlalchemy as sa
+from app.db.repositories.assets import SecuritiesRepository
+from app.models.equity import EquityCreate
+import json
+import os
 
 # revision identifiers, used by Alembic
 revision = "12345678654"
@@ -44,6 +48,7 @@ def create_add_equity_trigger() -> None:
         """
     )
 
+
 def create_add_ETF_trigger() -> None:
     op.execute(
         """
@@ -58,6 +63,7 @@ def create_add_ETF_trigger() -> None:
         $$ language 'plpgsql';
         """
     )
+
 
 def timestamps(indexed: bool = False) -> Tuple[sa.Column, sa.Column]:
     return (
@@ -126,6 +132,7 @@ def create_equities_table() -> None:
         EXECUTE PROCEDURE insert_equity_into_securities();"""
     )
 
+
 def create_ETFs_table() -> None:
     op.create_table(
         "etfs",
@@ -168,6 +175,7 @@ def create_ETFs_table() -> None:
         EXECUTE PROCEDURE insert_ETF_into_securities();"""
     )
 
+
 def create_users_table() -> None:
     op.create_table(
         "users",
@@ -190,6 +198,7 @@ def create_users_table() -> None:
         EXECUTE PROCEDURE update_updated_at_column();
         """
     )
+
 
 def create_portfolios_table() -> None:
     op.create_table(
@@ -215,6 +224,29 @@ def create_portfolios_table() -> None:
         """
     )
 
+
+def insert_equities():
+    directory = os.fsencode('app/db/migrations/data/Equities')
+
+    for file in os.listdir(directory):
+        with open('app/db/migrations/data/Equities/'+file.decode("utf-8")) as json_file:
+            data = json.load(json_file)
+            equities = []
+            for asset in data.keys():
+                try:
+                    equities.append((EquityCreate(ticker=asset,
+                                                   name=data[asset]['short_name'],
+                                                   country=data[asset]['country'],
+                                                   sector=data[asset]['sector'],
+                                                   industry=data[asset]['industry'],
+                                                   exchange=data[asset]['exchange']).dict()))
+                except:
+                    continue
+            op.get_bind().execute(sa.sql.text("""INSERT INTO equities (ticker, name, country, sector, industry, exchange)
+                                        VALUES (:ticker, :name, :country, :sector, :industry, :exchange);"""),
+                                  equities)
+
+
 def upgrade() -> None:
     create_updated_at_trigger()
     create_add_equity_trigger()
@@ -224,6 +256,7 @@ def upgrade() -> None:
     create_ETFs_table()
     create_users_table()
     create_portfolios_table()
+    insert_equities()
 
 
 def downgrade() -> None:
