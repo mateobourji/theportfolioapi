@@ -24,23 +24,19 @@ ADD_ETF_QUERY = """
     communication_services, financial_services, utilities, industrials, energy, healthcare;
     """
 
-GET_SECURITIES_QUERY = """
-    SELECT ticker, type 
-    FROM securities
-    WHERE ((ticker = ANY(:tickers)) OR (:tickers IS NULL))
-    ORDER BY ticker asc;
-    """
-
 GET_EQUITIES_QUERY = """
-    SELECT ticker, name, country, sector, industry, exchange
+    SELECT ticker, short_name, long_name, summary, currency, sector, industry, exchange, market, country, city
     FROM equities
     WHERE 
-        ((ticker = ANY(:tickers)) OR (:tickers IS NULL))
-        AND ((name ILIKE ANY(:names)) OR (:names IS NULL))
-        AND ((sector = ANY(:sectors)) OR (:sectors IS NULL))
-        AND ((industry = ANY(:industries)) OR (:industries IS NULL))
-        AND ((country = ANY(:countries)) OR (:countries IS NULL))
-        AND ((exchange = ANY(:exchanges)) OR (:exchanges IS NULL))
+        ((ticker = ANY(:ticker)) OR (:ticker IS NULL))
+        AND ((long_name ILIKE ANY(:long_name)) OR (:long_name IS NULL))
+        AND ((currency = ANY(:currency)) OR (:currency IS NULL))
+        AND ((sector = ANY(:sector)) OR (:sector IS NULL))
+        AND ((industry = ANY(:industry)) OR (:industry IS NULL))
+        AND ((exchange = ANY(:exchange)) OR (:exchange IS NULL))
+        AND ((market = ANY(:market)) OR (:market IS NULL))
+        AND ((country = ANY(:country)) OR (:country IS NULL))
+        AND ((city = ANY(:city)) OR (:city IS NULL))
     ORDER BY ticker asc;
     """
 
@@ -89,44 +85,6 @@ class SecuritiesRepository(BaseRepository):
     """"
     All database actions associated with the Ticker resource
     """
-
-    async def add_tickers(self, *, tickers: List[str]) -> List[TickerPublic]:
-
-        added_tickers = []
-
-        """GET tickers that are already existing in database to avoid unique constraint. Use list comprehension to 
-         generate list of tickers from List[TickerPublic]. However, if there are no existing tickers in the db, 
-         GET function returns None. Therefore use lambda function to replace None with empty List."""
-        existing_tickers = [security.ticker for security in
-                            (lambda x: [] if x is None else x)(await self.get_securities_by_ticker(tickers=tickers))]
-
-        for ticker in list(np.setdiff1d(tickers, existing_tickers)):
-
-            data = Ticker_Data(ticker)
-
-            if data.quoteType == 'EQUITY':
-                await self._add_equity(new_equity=EquityCreate.parse_obj(vars(data)))
-                added_tickers.append(TickerPublic(ticker=ticker, type='Equity'))
-
-            if data.quoteType == 'ETF':
-                await self._add_etf(new_ETF=ETFCreate.parse_obj(vars(data)))
-                added_tickers.append(TickerPublic(ticker=ticker, type='ETF'))
-
-        return added_tickers
-
-    async def _add_equity(self, *, new_equity: EquityCreate) -> EquityInDB:
-        query_values = new_equity.dict()
-
-        equity = await self.db.fetch_one(query=ADD_EQUITY_QUERY, values=query_values)
-
-        return EquityInDB(**equity)
-
-    async def _add_etf(self, *, new_ETF: ETFCreate) -> ETFInDB:
-        query_values = new_ETF.dict()
-
-        etf = await self.db.fetch_one(query=ADD_ETF_QUERY, values=query_values)
-
-        return ETFInDB(**etf)
 
     async def get_equities_by_ticker(self, *, params: EquityQueryParams) -> Optional[List[EquityPublic]]:
 

@@ -1,3 +1,5 @@
+import json
+import random
 import warnings
 import os
 import pytest
@@ -103,38 +105,14 @@ def authorized_client_new(client: AsyncClient, test_user_new: UserInDB) -> Async
 
 @pytest.fixture
 async def test_equities1(db: Database) -> List[EquityInDB]:
-    equities = [EquityInDB(ticker='CSCO',
-                           name='Cisco Systems, Inc.',
-                           country='United States',
-                           sector='Technology',
-                           industry='Communication Equipment',
-                           exchange='NMS'),
-                EquityInDB(ticker='NFLX',
-                           name='Netflix, Inc.',
-                           country='United States',
-                           sector='Communication Services',
-                           industry='Entertainment',
-                           exchange='NMS'),
-                EquityInDB(ticker="AAPL",
-                           name="Apple Inc.",
-                           country="United States",
-                           sector="Technology",
-                           industry="Consumer Electronics",
-                           exchange="NMS"),
-                EquityInDB(ticker="AMZN",
-                           name="Amazon.com, Inc.",
-                           country="United States",
-                           sector="Consumer Cyclical",
-                           industry="Internet Retail",
-                           exchange="NMS"),
-                EquityInDB(ticker="BP",
-                           name="BP p.l.c.",
-                           country="United Kingdom",
-                           sector="Energy",
-                           industry="Oil & Gas Integrated",
-                           exchange="NYQ")
-                ]
-
-    await SecuritiesRepository(db).add_tickers(tickers=[equity.ticker for equity in equities])
-
+    file = os.fsencode('app/db/migrations/data/Equities/Australia.json')
+    with open(file) as json_file:
+        data = json.load(json_file)
+        equities = []
+        for asset in random.choices(list(data),k=10):
+            try:
+                data[asset]['ticker'] = asset
+                equities.append(EquityInDB.parse_obj(data[asset]))
+            except:
+                continue
     return equities
