@@ -10,17 +10,19 @@ import json
 import os
 
 # revision identifiers, used by Alembic
+from app.models.etf import ETFCreate
 
 revision = '89a2cbf541d3'
 down_revision = '12345678654'
 branch_labels = None
 depends_on = None
 
+
 def populate_equities_table():
     directory = os.fsencode('app/db/migrations/data/Equities')
 
     for file in os.listdir(directory):
-        with open('app/db/migrations/data/Equities/'+file.decode("utf-8")) as json_file:
+        with open('app/db/migrations/data/Equities/' + file.decode("utf-8")) as json_file:
             data = json.load(json_file)
             equities = []
             for asset in data.keys():
@@ -37,8 +39,46 @@ def populate_equities_table():
                                                """),
                                   equities)
 
+
+def populate_ETFs_table():
+    directory = os.fsencode('app/db/migrations/data/ETFs')
+
+    for file in os.listdir(directory):
+        with open('app/db/migrations/data/ETFs/' + file.decode("utf-8")) as json_file:
+            data = json.load(json_file)
+            etfs = []
+            for asset in data.keys():
+                try:
+                    data[asset]['ticker'] = asset
+                    etfs.append(ETFCreate.parse_obj(data[asset]).dict())
+                except:
+                    continue
+            op.get_bind().execute(sa.sql.text("""
+                                                INSERT INTO etfs (ticker, short_name, long_name, summary, currency,
+                                                category, family, exchange, market)
+                                                VALUES (:ticker, :short_name, :long_name, :summary, :currency, 
+                                                :category, :family, :exchange, :market);
+                                               """),
+                                  etfs)
+
+
+def depopulate_equities_table():
+    op.get_bind().execute(sa.sql.text("""
+                                        TRUNCATE table equities;
+                                       """))
+
+
+def depopulate_etfs_table():
+    op.get_bind().execute(sa.sql.text("""
+                                        TRUNCATE table etfs;
+                                       """))
+
+
 def upgrade() -> None:
     populate_equities_table()
+    populate_ETFs_table()
+
 
 def downgrade() -> None:
-    pass
+    depopulate_equities_table()
+    depopulate_etfs_table()

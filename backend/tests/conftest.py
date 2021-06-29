@@ -10,11 +10,13 @@ from databases import Database
 import alembic
 from alembic.config import Config
 from typing import List
+
+from app.models.etf import ETFInDB
 from app.models.user import UserCreate, UserInDB
 from app.db.repositories.users import UsersRepository
 from app.models.ticker import TickerInDB
 from app.models.equity import EquityCreate, EquityInDB
-from app.db.repositories.assets import SecuritiesRepository
+from app.db.repositories.equity import EquityRepository
 from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
 from app.services import auth_service
 
@@ -71,6 +73,7 @@ async def test_user(db: Database) -> UserInDB:
         return existing_user
     return await user_repo.register_new_user(new_user=new_user)
 
+
 @pytest.fixture
 async def test_user_new(db: Database) -> UserInDB:
     new_user = UserCreate(
@@ -83,6 +86,7 @@ async def test_user_new(db: Database) -> UserInDB:
     if existing_user:
         return existing_user
     return await user_repo.register_new_user(new_user=new_user)
+
 
 @pytest.fixture
 def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
@@ -103,16 +107,32 @@ def authorized_client_new(client: AsyncClient, test_user_new: UserInDB) -> Async
     }
     return client
 
+
 @pytest.fixture
-async def test_equities1(db: Database) -> List[EquityInDB]:
-    file = os.fsencode('app/db/migrations/data/Equities/Australia.json')
+async def test_equities(db: Database) -> List[EquityInDB]:
+    file = os.fsencode('app/db/migrations/data/Equities/equities_part1.json')
     with open(file) as json_file:
         data = json.load(json_file)
         equities = []
-        for asset in random.choices(list(data),k=10):
+        for asset in random.choices(list(data), k=10):
             try:
                 data[asset]['ticker'] = asset
                 equities.append(EquityInDB.parse_obj(data[asset]))
             except:
                 continue
     return equities
+
+
+@pytest.fixture
+async def test_etfs(db: Database) -> List[ETFInDB]:
+    file = os.fsencode('app/db/migrations/data/ETFs/World Allocation.json')
+    with open(file) as json_file:
+        data = json.load(json_file)
+        etfs = []
+        for asset in random.choices(list(data), k=10):
+            try:
+                data[asset]['ticker'] = asset
+                etfs.append(ETFInDB.parse_obj(data[asset]))
+            except:
+                continue
+    return etfs
