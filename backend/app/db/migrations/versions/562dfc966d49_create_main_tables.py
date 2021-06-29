@@ -6,10 +6,7 @@ Create Date: 2020-05-05 10:41:35.468471
 from typing import Tuple
 from alembic import op
 import sqlalchemy as sa
-from app.db.repositories.assets import SecuritiesRepository
-from app.models.equity import EquityCreate
-import json
-import os
+
 
 # revision identifiers, used by Alembic
 revision = "12345678654"
@@ -33,37 +30,6 @@ def create_updated_at_trigger() -> None:
     )
 
 
-def create_add_equity_trigger() -> None:
-    op.execute(
-        """
-        CREATE OR REPLACE FUNCTION insert_equity_into_securities()
-            RETURNS TRIGGER AS
-        $$
-        BEGIN
-            INSERT INTO securities (ticker, type)
-            VALUES (NEW.ticker, 'equity');
-            RETURN NULL;
-        END;
-        $$ language 'plpgsql';
-        """
-    )
-
-
-def create_add_ETF_trigger() -> None:
-    op.execute(
-        """
-        CREATE OR REPLACE FUNCTION insert_ETF_into_securities()
-            RETURNS TRIGGER AS
-        $$
-        BEGIN
-            INSERT INTO securities (ticker, type)
-            VALUES (NEW.ticker, 'ETF');
-            RETURN NULL;
-        END;
-        $$ language 'plpgsql';
-        """
-    )
-
 
 def timestamps(indexed: bool = False) -> Tuple[sa.Column, sa.Column]:
     return (
@@ -84,52 +50,20 @@ def timestamps(indexed: bool = False) -> Tuple[sa.Column, sa.Column]:
     )
 
 
-def create_securities_table() -> None:
-    op.create_table(
-        "securities",
-        sa.Column("ticker", sa.Text, primary_key=True, nullable=False, index=True),
-        sa.Column("type", sa.Text, nullable=False),
-        *timestamps(),
-
-    )
-    op.execute(
-        """
-        CREATE TRIGGER update_securities_modtime
-            BEFORE UPDATE
-            ON securities
-            FOR EACH ROW
-        EXECUTE PROCEDURE update_updated_at_column();
-        """
-    )
-
-
 def create_equities_table() -> None:
     op.create_table(
         "equities",
         sa.Column("ticker", sa.Text, primary_key=True, nullable=False, index=True),
-        sa.Column("name", sa.Text, nullable=True),
-        sa.Column("country", sa.Text, nullable=True),
+        sa.Column("short_name", sa.Text, nullable=True),
+        sa.Column("long_name", sa.Text, nullable=True),
+        sa.Column("summary", sa.Text, nullable=True),
+        sa.Column("currency", sa.Text, nullable=True),
         sa.Column("sector", sa.Text, nullable=True),
         sa.Column("industry", sa.Text, nullable=True),
         sa.Column("exchange", sa.Text, nullable=True),
-        *timestamps(),
-    )
-    op.execute(
-        """
-        CREATE TRIGGER update_equities_modtime
-            BEFORE UPDATE
-            ON equities
-            FOR EACH ROW
-        EXECUTE PROCEDURE update_updated_at_column();
-        """
-    )
-    op.execute(
-        """
-        CREATE TRIGGER insert_equities_into_securities
-            AFTER INSERT
-            ON equities
-            FOR EACH ROW
-        EXECUTE PROCEDURE insert_equity_into_securities();"""
+        sa.Column("market", sa.Text, nullable=True),
+        sa.Column("country", sa.Text, nullable=True),
+        sa.Column("city", sa.Text, nullable=True),
     )
 
 
@@ -137,43 +71,18 @@ def create_ETFs_table() -> None:
     op.create_table(
         "etfs",
         sa.Column("ticker", sa.Text, primary_key=True, nullable=False, index=True),
-        sa.Column("name", sa.Text, nullable=True),
+        sa.Column("short_name", sa.Text, nullable=True),
+        sa.Column("long_name", sa.Text, nullable=True),
+        sa.Column("summary", sa.Text, nullable=True),
+        sa.Column("currency", sa.Text, nullable=True),
+        sa.Column("category", sa.Text, nullable=True),
+        sa.Column("family", sa.Text, nullable=True),
         sa.Column("exchange", sa.Text, nullable=True),
-        sa.Column("bond_position", sa.Float, nullable=True),
-        sa.Column("investment_grade_bonds", sa.Float, nullable=True),
-        sa.Column("junk_bonds", sa.Float, nullable=True),
-        sa.Column("stock_position", sa.Float, nullable=True),
-        sa.Column("real_estate", sa.Float, nullable=True),
-        sa.Column("consumer_cyclical", sa.Float, nullable=True),
-        sa.Column("basic_materials", sa.Float, nullable=True),
-        sa.Column("consumer_defensive", sa.Float, nullable=True),
-        sa.Column("technology", sa.Float, nullable=True),
-        sa.Column("communication_services", sa.Float, nullable=True),
-        sa.Column("financial_services", sa.Float, nullable=True),
-        sa.Column("utilities", sa.Float, nullable=True),
-        sa.Column("industrials", sa.Float, nullable=True),
-        sa.Column("energy", sa.Float, nullable=True),
-        sa.Column("healthcare", sa.Float, nullable=True),
+        sa.Column("market", sa.Text, nullable=True),
         *timestamps(),
     )
 
-    op.execute(
-        """
-        CREATE TRIGGER update_ETFs_modtime
-            BEFORE UPDATE
-            ON etfs
-            FOR EACH ROW
-        EXECUTE PROCEDURE update_updated_at_column();
-        """
-    )
-    op.execute(
-        """
-        CREATE TRIGGER insert_ETFs_into_securities
-            AFTER INSERT
-            ON etfs
-            FOR EACH ROW
-        EXECUTE PROCEDURE insert_ETF_into_securities();"""
-    )
+
 
 
 def create_users_table() -> None:
@@ -225,46 +134,21 @@ def create_portfolios_table() -> None:
     )
 
 
-def insert_equities():
-    directory = os.fsencode('app/db/migrations/data/Equities')
-
-    for file in os.listdir(directory):
-        with open('app/db/migrations/data/Equities/'+file.decode("utf-8")) as json_file:
-            data = json.load(json_file)
-            equities = []
-            for asset in data.keys():
-                try:
-                    equities.append((EquityCreate(ticker=asset,
-                                                   name=data[asset]['short_name'],
-                                                   country=data[asset]['country'],
-                                                   sector=data[asset]['sector'],
-                                                   industry=data[asset]['industry'],
-                                                   exchange=data[asset]['exchange']).dict()))
-                except:
-                    continue
-            op.get_bind().execute(sa.sql.text("""INSERT INTO equities (ticker, name, country, sector, industry, exchange)
-                                        VALUES (:ticker, :name, :country, :sector, :industry, :exchange);"""),
-                                  equities)
 
 
 def upgrade() -> None:
     create_updated_at_trigger()
-    create_add_equity_trigger()
-    create_add_ETF_trigger()
-    create_securities_table()
     create_equities_table()
     create_ETFs_table()
     create_users_table()
     create_portfolios_table()
-    insert_equities()
+
 
 
 def downgrade() -> None:
-    op.drop_table('securities')
     op.drop_table("equities")
     op.drop_table("etfs")
     op.drop_table("portfolios")
     op.drop_table("users")
     op.execute("DROP FUNCTION update_updated_at_column")
-    op.execute("DROP FUNCTION insert_equity_into_securities()")
-    op.execute("DROP FUNCTION insert_ETF_into_securities()")
+
