@@ -11,6 +11,7 @@ import os
 
 # revision identifiers, used by Alembic
 from app.models.etf import ETFCreate
+from app.models.fund import FundCreate
 
 revision = '89a2cbf541d3'
 down_revision = '12345678654'
@@ -40,7 +41,7 @@ def populate_equities_table():
                                   equities)
 
 
-def populate_ETFs_table():
+def populate_etfs_table():
     directory = os.fsencode('app/db/migrations/data/ETFs')
 
     for file in os.listdir(directory):
@@ -62,6 +63,30 @@ def populate_ETFs_table():
                                   etfs)
 
 
+def populate_funds_table():
+    directory = os.fsencode('app/db/migrations/data/Funds')
+
+    for file in os.listdir(directory):
+        with open('app/db/migrations/data/Funds/' + file.decode("utf-8")) as json_file:
+            print(file)
+            data = json.load(json_file)
+            funds = []
+            for asset in data.keys():
+                try:
+                    data[asset]['ticker'] = asset
+                    funds.append(FundCreate.parse_obj(data[asset]).dict())
+                except:
+                    continue
+
+            op.get_bind().execute(sa.sql.text("""
+                                                INSERT INTO funds (ticker, short_name, long_name, summary, currency,
+                                                category, family, exchange, market)
+                                                VALUES (:ticker, :short_name, :long_name, :summary, :currency, 
+                                                :category, :family, :exchange, :market);
+                                               """),
+                                  funds)
+
+
 def depopulate_equities_table():
     op.get_bind().execute(sa.sql.text("""
                                         TRUNCATE table equities;
@@ -74,11 +99,19 @@ def depopulate_etfs_table():
                                        """))
 
 
+def depopulate_funds_table():
+    op.get_bind().execute(sa.sql.text("""
+                                        TRUNCATE table funds;
+                                       """))
+
+
 def upgrade() -> None:
     populate_equities_table()
-    populate_ETFs_table()
+    populate_etfs_table()
+    populate_funds_table()
 
 
 def downgrade() -> None:
     depopulate_equities_table()
     depopulate_etfs_table()
+    depopulate_funds_table()
