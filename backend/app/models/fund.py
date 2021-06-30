@@ -1,0 +1,77 @@
+from app.models.core import CoreModel
+from typing import Optional, List
+from fastapi import Query
+from pydantic import validator
+
+
+class FundBase(CoreModel):
+    """
+    All common characteristics of our Fund resource
+    """
+
+def na_if_none(input) -> str:
+    if isinstance(input, str):
+        return input
+    else:
+        return "n/a"
+
+class FundCreate(FundBase):
+    ticker: str
+    short_name: str
+    long_name: str
+    summary: Optional[str]
+    currency: Optional[str]
+    category: Optional[str]
+    family: Optional[str]
+    exchange: Optional[str]
+    market: Optional[str]
+
+    #validators
+    _na_if_none_summary = validator('summary', allow_reuse=True)(na_if_none)
+    _na_if_none_currency = validator('currency', allow_reuse=True)(na_if_none)
+    _na_if_none_category = validator('category', allow_reuse=True)(na_if_none)
+    _na_if_none_family = validator('family', allow_reuse=True)(na_if_none)
+    _na_if_none_exchange = validator('exchange', allow_reuse=True)(na_if_none)
+    _na_if_none_market = validator('market', allow_reuse=True)(na_if_none)
+
+class FundInDB(FundBase):
+    ticker: str
+    short_name: str
+    long_name: str
+    summary: str
+    currency: str
+    category: str
+    family: str
+    exchange: str
+    market: str
+
+class FundPublic(FundBase):
+    ticker: str
+    short_name: str
+    long_name: str
+    summary: str
+    currency: str
+    category: str
+    family: str
+    exchange: str
+    market: str
+
+class FundQueryParams:
+    def __init__(self,
+                 ticker: Optional[List[str]] = Query(None, description="*Example: [\"ADRE\"]*"),
+                 long_name: Optional[List[str]] = Query(None, description="Example: [\"SPDR Bloomberg Barclays Emerging Markets Local Bond Fund\"]*"),
+                 currency: Optional[List[str]] = Query(None, description="*Example: [\"USD\"]*"),
+                 category: Optional[List[str]] = Query(None, description="*Example: [\"Industrials, Emerging Markets Bond\"]*"),
+                 family: Optional[List[str]] = Query(None, description="*Example: [\"iShares\"]*"),
+                 exchange: Optional[List[str]] = Query(None, description="*Example: [\"NMS\"]*"),
+                 market: Optional[List[str]] = Query(None, description="*Example: [\"us_market\"*]")
+                 ):
+        # Optional WHERE IN ANY() SQL query in repo requires tuple of values to filter or NULL/None to ignore filter
+        # Lambda function below returns tuple if list is passed, otherwise None
+        self.ticker = (lambda x: tuple(x) if x is not None else x)(ticker)
+        self.long_name = (lambda x: tuple(x) if x is not None else x)(long_name)
+        self.currency = (lambda x: tuple(x) if x is not None else x)(currency)
+        self.category = (lambda x: tuple(x) if x is not None else x)(category)
+        self.family = (lambda x: tuple(x) if x is not None else x)(family)
+        self.exchange = (lambda x: tuple(x) if x is not None else x)(exchange)
+        self.market = (lambda x: tuple(x) if x is not None else x)(market)

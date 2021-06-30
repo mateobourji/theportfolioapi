@@ -82,6 +82,21 @@ def create_ETFs_table() -> None:
         *timestamps(),
     )
 
+def create_funds_table() -> None:
+    op.create_table(
+        "funds",
+        sa.Column("ticker", sa.Text, primary_key=True, nullable=False, index=True),
+        sa.Column("short_name", sa.Text, nullable=True),
+        sa.Column("long_name", sa.Text, nullable=True),
+        sa.Column("summary", sa.Text, nullable=True),
+        sa.Column("currency", sa.Text, nullable=True),
+        sa.Column("category", sa.Text, nullable=True),
+        sa.Column("family", sa.Text, nullable=True),
+        sa.Column("exchange", sa.Text, nullable=True),
+        sa.Column("market", sa.Text, nullable=True),
+        *timestamps(),
+    )
+
 
 
 
@@ -142,12 +157,13 @@ def upgrade() -> None:
     create_ETFs_table()
     create_users_table()
     create_portfolios_table()
-
+    create_funds_table()
 
 
 def downgrade() -> None:
     op.drop_table("equities")
     op.drop_table("etfs")
+    op.drop_table("funds")
     op.drop_table("portfolios")
     op.drop_table("users")
     op.execute("DROP FUNCTION update_updated_at_column")

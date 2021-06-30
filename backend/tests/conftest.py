@@ -12,6 +12,7 @@ from alembic.config import Config
 from typing import List
 
 from app.models.etf import ETFInDB
+from app.models.fund import FundInDB
 from app.models.user import UserCreate, UserInDB
 from app.db.repositories.users import UsersRepository
 from app.models.ticker import TickerInDB
@@ -136,3 +137,18 @@ async def test_etfs(db: Database) -> List[ETFInDB]:
             except:
                 continue
     return etfs
+
+
+@pytest.fixture
+async def test_funds(db: Database) -> List[FundInDB]:
+    file = os.fsencode('app/db/migrations/data/Funds/Diversified Emerging Mkts.json')
+    with open(file) as json_file:
+        data = json.load(json_file)
+        funds = []
+        for asset in random.choices(list(data), k=10):
+            try:
+                data[asset]['ticker'] = asset
+                funds.append(FundInDB.parse_obj(data[asset]))
+            except:
+                continue
+    return funds

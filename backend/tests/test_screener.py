@@ -10,11 +10,12 @@ from app.models.equity import EquityInDB
 from app.models.etf import ETFInDB
 
 # decorate all tests with @pytest.mark.asyncio
+from app.models.fund import FundInDB
 
 pytestmark = pytest.mark.asyncio
 
 
-def common_assertions(res, assets: Union[List[ETFInDB], List[EquityInDB]], filters: Dict):
+def common_assertions(res, assets: Union[List[ETFInDB], List[EquityInDB], List[FundInDB]], filters: Dict):
     assert res.status_code == HTTP_200_OK
     assert isinstance(res.json(), list)
     assert len(res.json()) > 0
@@ -119,6 +120,45 @@ class TestGetETF:
         assert res.status_code == status_code
 
 
+class TestGetFund:
+    @pytest.mark.parametrize(
+        "filters, num_filters",
+        (
+                (["family"], 4),
+                (["ticker"], 3),
+                (["currency"], 2),
+                (["category"], 1),
+                (["category", "family"], 1),
+                (["exchange"], 1),
+                (["market"], 2),
+                ([], 1)
+        ),
+    )
+    async def test_valid_filter_gets_funds(
+            self, app: FastAPI, authorized_client: AsyncClient, test_funds: List[FundInDB], filters: List[str],
+            num_filters: int) -> None:
+
+        params = get_params(assets=test_funds, filters=filters, num_filters=num_filters)
+
+        res = await authorized_client.get(app.url_path_for("screener:get-funds"), params=params)
+
+        funds_in_db = [FundInDB(**e) for e in res.json()]
+        common_assertions(res=res, assets=funds_in_db, filters=params)
+
+    @pytest.mark.parametrize(
+        "filters, parameters, status_code",
+        (
+                ("ticker", ["INVALID"], 404),
+                ("currency", -1, 404),
+                ("family", "invalid", 404),
+                ("exchange", ["CAC", "FLO"], 404)
+        ),
+    )
+    async def test_invalid_input_raises_error(self, app: FastAPI, authorized_client: AsyncClient, filters: str,
+                                              parameters: List[str], status_code: int) -> None:
+        params = {filters: parameters}
+        res = await authorized_client.get(app.url_path_for("screener:get-funds"), params=params)
+        assert res.status_code == status_code
 
 
 

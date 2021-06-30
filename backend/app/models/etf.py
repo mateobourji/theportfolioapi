@@ -58,13 +58,13 @@ class ETFPublic(ETFBase):
 
 class ETFQueryParams:
     def __init__(self,
-                 ticker: Optional[List[str]] = Query(None, description="example: ADRE"),
-                 long_name: Optional[List[str]] = Query(None, description="example: SPDR Bloomberg Barclays Emerging Markets Local Bond ETF"),
-                 currency: Optional[List[str]] = Query(None, description="example: USD"),
-                 category: Optional[List[str]] = Query(None, description="example: Industrials, Emerging Markets Bond"),
-                 family: Optional[List[str]] = Query(None, description="example: iShares"),
-                 exchange: Optional[List[str]] = Query(None, description="example: NMS"),
-                 market: Optional[List[str]] = Query(None, description="example: us_market")
+                 ticker: Optional[List[str]] = Query(None, description="*Example: [\"ADRE\"]*"),
+                 long_name: Optional[List[str]] = Query(None, description="Example: [\"SPDR Bloomberg Barclays Emerging Markets Local Bond ETF\"]*"),
+                 currency: Optional[List[str]] = Query(None, description="*Example: [\"USD\"]*"),
+                 category: Optional[List[str]] = Query(None, description="*Example: [\"Industrials, Emerging Markets Bond\"]*"),
+                 family: Optional[List[str]] = Query(None, description="*Example: [\"iShares\"]*"),
+                 exchange: Optional[List[str]] = Query(None, description="*Example: [\"NMS\"]*"),
+                 market: Optional[List[str]] = Query(None, description="*Example: [\"us_market\"*]")
                  ):
         # Optional WHERE IN ANY() SQL query in repo requires tuple of values to filter or NULL/None to ignore filter
         # Lambda function below returns tuple if list is passed, otherwise None
