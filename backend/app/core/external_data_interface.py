@@ -1,6 +1,9 @@
 import pandas as pd
 import yfinance as yf
 import yahooquery as yq
+import logging
+
+core_logger = logging.getLogger("CORE")
 
 
 class Financial_Data:
@@ -28,13 +31,17 @@ class Financial_Data:
         # dividends)
         data = yf.download(self.securities, start=self._start, end=self._end, interval="1d", actions=True)
 
+        core_logger.log(level=logging.INFO,
+                        msg="Downloading historical data from %s to %s every 1d for the following securities: %s"
+                            % (self._start, self._end, self.securities))
+
         return data
 
     def _get_dividends(self):
         dividends = self._data.drop(columns=["Close", "Adj Close", "Open", "High", "Low", "Volume", "Stock Splits"])
 
         if len(self.securities) > 1:
-            dividends = dividends.droplevel(0,axis=1)
+            dividends = dividends.droplevel(0, axis=1)
 
         else:
             dividends.rename(columns={"Dividends": self.securities[0]}, inplace=True)
@@ -44,7 +51,7 @@ class Financial_Data:
         return dividends.astype('float64')
 
     def _get_prices(self):
-        prices = self._data.drop(columns=["Adj Close", "Open", "High", "Low", "Volume", "Stock Splits", "Dividends"]) \
+        prices = self._data.drop(columns=["Adj Close", "Open", "High", "Low", "Volume", "Stock Splits", "Dividends"])
 
         if len(self.securities) > 1:
             prices = prices.droplevel(0, axis=1)

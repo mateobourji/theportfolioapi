@@ -10,7 +10,11 @@ from app.core.check_tickers import check_tickers
 from app.core.historical_data import Hist_Data, Hist_Data_Plot
 from app.models.historical_performance import HistoricalPerformancePublic
 
+import logging
+
 router = APIRouter()
+
+core_logger = logging.getLogger("CORE-ANALYSIS")
 
 
 @router.get("/statistics/data/", name="historical-performance:data", status_code=HTTP_200_OK,
@@ -20,6 +24,7 @@ async def historical_performance(q: List[str] = Query(..., title="List of securi
                                  end: Optional[datetime.date] = datetime.date.today()) -> HistoricalPerformancePublic:
     check_tickers(q)
     hist_data = Hist_Data(securities=q, start=start, end=end)
+    core_logger.log(level=logging.INFO, msg="logging")
     return HistoricalPerformancePublic.parse_obj(vars(hist_data))
 
 
