@@ -2,7 +2,7 @@ version: 1
 disable_existing_loggers: true
 formatters:
   simple:
-    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(message)s'
 handlers:
   console:
     class: logging.StreamHandler
@@ -19,14 +19,14 @@ loggers:
     level: DEBUG
     handlers: [console, file_handler]
     propagate: no
-  CORE-ANALYSIS:
-    level: DEBUG
-    handlers: [console, file_handler]
-    propogate: no
   CORE:
     level: DEBUG
     handlers: [ console, file_handler ]
-    propogate: no
+    propagate: no
+  DB:
+    level: DEBUG
+    handlers: [ console, file_handler ]
+    propagate: no
 root:
   level: INFO
   handlers: [console, file_handler]

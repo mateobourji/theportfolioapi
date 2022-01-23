@@ -2,6 +2,9 @@ from typing import List, Optional
 from app.db.repositories.base import BaseRepository
 from app.models.portfolio import PortfolioCreate, PortfolioInDB
 from app.core.portfolio import Portfolio
+import logging
+
+db_logger = logging.getLogger("DB")
 
 ADD_PORTFOLIO_QUERY = """
     INSERT INTO portfolios (user_id, portfolio_weights, returns, std, sharpe_ratio, return_over_risk, 
@@ -60,11 +63,17 @@ class PortfoliosRepository(BaseRepository):
 
         portfolio = await self.db.fetch_one(query=ADD_PORTFOLIO_QUERY, values=vars(new_portfolio))
 
+        db_logger.log(level=logging.INFO,
+                      msg="Adding portfolio for user %s" % new_portfolio.user_id)
+
         return PortfolioInDB(**portfolio)
 
     async def get_all_portfolios(self, user_id: int) -> List[PortfolioInDB]:
 
         portfolios = await self.db.fetch_all(query=GET_ALL_PORTFOLIOS_QUERY, values={'user_id':user_id})
+
+        db_logger.log(level=logging.INFO,
+                      msg="Querying all portfolios for user %s" % user_id)
 
         return [PortfolioInDB(**portfolio) for portfolio in portfolios]
 
@@ -73,7 +82,11 @@ class PortfoliosRepository(BaseRepository):
         portfolio = await self.db.fetch_one(query=GET_PORTFOLIO_BY_ID_QUERY, values={'user_id': user_id,
                                                                                      'portfolio_id': portfolio_id})
 
+        db_logger.log(level=logging.INFO,
+                      msg="Querying portfolio with portfolio ID %s for user %s" % (portfolio_id, user_id))
         if not portfolio:
+            db_logger.log(level=logging.INFO,
+                          msg="No portfolio with portfolio ID %s found for user %s" % (portfolio_id, user_id))
             return None
 
         return PortfolioInDB(**portfolio)
@@ -82,8 +95,12 @@ class PortfoliosRepository(BaseRepository):
 
         portfolio = await self.db.fetch_one(query=DELETE_PORTFOLIO_BY_ID_QUERY, values={'user_id': user_id,
                                                                                      'portfolio_id': portfolio_id})
+        db_logger.log(level=logging.INFO,
+                      msg="Deleting portfolio with portfolio ID %s for user %s" % (portfolio_id, user_id))
 
         if not portfolio:
+            db_logger.log(level=logging.INFO,
+                          msg="No portfolio with portfolio ID %s found for user %s" % (portfolio_id, user_id))
             return None
 
         return PortfolioInDB(**portfolio)

@@ -1,8 +1,10 @@
 from datetime import datetime, date
 from typing import List, Optional, Any
-from pydantic import Json, validator, BaseModel
+
+from pydantic.datetime_parse import parse_date
+
 from app.models.core import CoreModel
-from pydantic.datetime_parse import parse_date, get_numeric
+
 
 def validate_date(v: Any) -> date:
     # if get_numeric(v, int) is not None:
@@ -14,6 +16,7 @@ class StrictDate(date):
     @classmethod
     def __get_validators__(cls):
         yield validate_date
+
 
 class PortfolioBase(CoreModel):
     """
@@ -78,7 +81,4 @@ class PortfolioPOSTBodyParams(CoreModel):
     #     ).date()
     # TODO: end is today's dated
 
-
-
 # Usage:
-

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK, HTTP_404_NOT_FOUND
-from app.core.external_data_interface import Financial_Data
+from app.core.external_data_interface import FinancialData
 import datetime
 from app.core.check_tickers import check_tickers
 from app.db.repositories.portfolio import PortfoliosRepository
@@ -43,7 +43,7 @@ async def get_portfolio_by_id(portfolio_id: int,
                                portfolio_repo: PortfoliosRepository = Depends(get_repository(PortfoliosRepository)
                                                                               )) -> PortfolioPublic:
     portfolio = await portfolio_repo.get_portfolio_by_id(user_id=current_user.id, portfolio_id=portfolio_id)
-
+    
     if not portfolio:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="No portfolio with that id for this user "
                                                                    "in the database.")

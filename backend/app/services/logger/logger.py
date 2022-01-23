@@ -15,6 +15,7 @@ def setup_logging(path=CONFIG_PATH, default_level=logging.INFO):
             try:
                 config = yaml.safe_load(f.read())
                 logging.config.dictConfig(config)
+                print('Set up logger with YAML configuration file.')
             except Exception as e:
                 print(e)
                 print('Error in Logging Configuration. Using default configs')
@@ -23,8 +24,3 @@ def setup_logging(path=CONFIG_PATH, default_level=logging.INFO):
         logging.basicConfig(level=default_level)
         print('Failed to load configuration file. Using default configs')
 
-
-if __name__ == "__main__":
-    setup_logging()
-    l = logging.getLogger("ENDPOINT")
-    l.log(logging.INFO, "Hello World")

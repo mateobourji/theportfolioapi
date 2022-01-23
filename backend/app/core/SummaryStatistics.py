@@ -1,3 +1,4 @@
+import logging
 import datetime
 from bokeh.io import output_file
 from bokeh.layouts import row
@@ -9,13 +10,14 @@ from bokeh.transform import transform
 from numpy import log
 from math import sqrt
 
-from app.core.external_data_interface import Financial_Data
+from app.core.external_data_interface import FinancialData
+
+core_logger = logging.getLogger("CORE")
 
 
-class Hist_Data(Financial_Data):
+class SummaryStatistics(FinancialData):
     def __init__(self, securities, provider="YF", start="2000-01-01", end=datetime.date.today(), corr_method='pearson'):
         super().__init__(securities, provider, start, end)
-        self._data = Financial_Data(securities=securities, provider=provider, start=start, end=end)
         self.securities = securities
         self.returns = self._calculate_returns()
         self.cum_returns = self._calculate_cum_returns()
@@ -57,15 +59,18 @@ class Hist_Data(Financial_Data):
         return None
 
 
-class Hist_Data_Plot():
+class SummaryStatisticsPlot:
     def __init__(self, securities, provider="YF", start="2000-01-01", end=datetime.date.today(), corr_method='pearson'):
-        self.hist_data = Hist_Data(securities, provider=provider, start=start, end=end, corr_method=corr_method)
+        self.hist_data = SummaryStatistics(securities, provider=provider, start=start, end=end, corr_method=corr_method)
 
     def plot_summary(self):
         file_name = "hist_data.html"
         output_file(filename=file_name)
         p = row(self._plot_cumulative_returns(), self._plot_risk_return(), self._plot_correlation())
         save(p)
+
+        core_logger.log(level=logging.INFO,
+                        msg="Plotting summary statistics for the following securities: %s" % self.hist_data.securities)
         return file_name
 
     def _plot_cumulative_returns(self):
@@ -166,4 +171,3 @@ class Hist_Data_Plot():
             fill_color=transform('correlation', mapper))
 
         return corr_matrix
-

@@ -7,7 +7,7 @@ import logging
 import json
 
 
-def get_application():
+def get_application() -> FastAPI:
     app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION, description=config.DESCRIPTION,
                   redoc_url=config.DOCS_URL, openapi_tags=config.TAGS_META)
     app.add_middleware(
@@ -33,7 +33,10 @@ app = get_application()
 async def log_request_and_response(request: Request, call_next):
     client = request.client.host
     endpoint_logger.log(level=logging.INFO,
-                        msg="REQUEST - Client: %s - Body: %s" % (client, request.query_params))
+                        msg="REQUEST - %s - %s - CLIENT: %s - BODY: %s" % (request.scope['path'],
+                                                                           request.scope['method'],
+                                                                           client,
+                                                                           request.query_params))
     response = await call_next(request)
 
     resp_body = [section async for section in response.__dict__['body_iterator']]
@@ -47,7 +50,10 @@ async def log_request_and_response(request: Request, call_next):
         resp_body = str(resp_body)
 
     endpoint_logger.log(level=logging.INFO,
-                        msg="RESPONSE - Client: %s - Body: %s" % (client, resp_body))
+                        msg="RESPONSE - %s - %s - CLIENT: %s - BODY: %s" % (request.scope['path'],
+                                                                            request.scope['method'],
+                                                                            client,
+                                                                            resp_body))
 
     return response
 
