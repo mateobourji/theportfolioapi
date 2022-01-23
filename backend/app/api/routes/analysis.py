@@ -7,10 +7,14 @@ from starlette.responses import HTMLResponse
 from starlette.status import HTTP_200_OK
 
 from app.core.check_tickers import check_tickers
-from app.core.historical_data import Hist_Data, Hist_Data_Plot
+from app.core.SummaryStatistics import SummaryStatistics, SummaryStatisticsPlot
 from app.models.historical_performance import HistoricalPerformancePublic
 
+import logging
+
 router = APIRouter()
+
+
 
 
 @router.get("/statistics/data/", name="historical-performance:data", status_code=HTTP_200_OK,
@@ -19,7 +23,8 @@ async def historical_performance(q: List[str] = Query(..., title="List of securi
                                  start: Optional[datetime.date] = "2000-01-01",
                                  end: Optional[datetime.date] = datetime.date.today()) -> HistoricalPerformancePublic:
     check_tickers(q)
-    hist_data = Hist_Data(securities=q, start=start, end=end)
+    hist_data = SummaryStatistics(securities=q, start=start, end=end)
+
     return HistoricalPerformancePublic.parse_obj(vars(hist_data))
 
 
@@ -30,6 +35,6 @@ async def historical_performance(q: List[str] = Query(..., title="List of securi
                                  end: Optional[datetime.date] = datetime.date.today()):
     check_tickers(q)
 
-    hist_data_plot = Hist_Data_Plot(securities=q, start=start, end=end)
+    hist_data_plot = SummaryStatisticsPlot(securities=q, start=start, end=end)
 
     return HTMLResponse(codecs.open(hist_data_plot.plot_summary()).read())

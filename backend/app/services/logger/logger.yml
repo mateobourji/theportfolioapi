@@ -1,0 +1,33 @@
+version: 1
+disable_existing_loggers: true
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+  file_handler:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: logfile.log
+loggers:
+  ENDPOINT:
+    level: DEBUG
+    handlers: [console, file_handler]
+    propagate: no
+  CORE:
+    level: DEBUG
+    handlers: [ console, file_handler ]
+    propagate: no
+  DB:
+    level: DEBUG
+    handlers: [ console, file_handler ]
+    propagate: no
+root:
+  level: INFO
+  handlers: [console, file_handler]
+

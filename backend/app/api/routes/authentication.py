@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.status import (
@@ -13,6 +14,8 @@ from app.models.user import UserCreate, UserInDB, UserPublic
 from app.services import auth_service
 
 router = APIRouter()
+
+auth_logger = logging.getLogger("CORE")
 
 
 @router.post("/register", response_model=UserPublic, name="users:register-new-user", status_code=HTTP_201_CREATED)

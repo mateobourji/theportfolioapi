@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize, Bounds
-from app.core.historical_data import Hist_Data
+from app.core.SummaryStatistics import SummaryStatistics
 import datetime
 
 
-class Portfolio(Hist_Data):
+class Portfolio(SummaryStatistics):
     risk_free_rate = np.power((1 + 0.017260), (1 / 365)) - 1
     # TODO: implement function to pull latest rf rate data from yahoo finance
 

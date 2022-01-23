@@ -1,9 +1,12 @@
 import pandas as pd
 import yfinance as yf
 import yahooquery as yq
+import logging
+
+core_logger = logging.getLogger("CORE")
 
 
-class Financial_Data:
+class FinancialData:
     """class to download and structure financial data (stock prices, dividends) of securities"""
 
     def __init__(self, securities, provider, start, end):
@@ -12,21 +15,17 @@ class Financial_Data:
         self._start = start
         self._end = end
         self._data = self._download_data()
-        self._dividends = self._get_dividends()
-        self._prices = self._get_prices()
-
-    @property
-    def dividends(self):
-        return self._dividends
-
-    @property
-    def prices(self):
-        return self._prices
+        self.dividends = self._get_dividends()
+        self.prices = self._get_prices()
 
     def _download_data(self):
         # download all price and dividend data once, then split into two dataframes (one for prices, the other for
         # dividends)
         data = yf.download(self.securities, start=self._start, end=self._end, interval="1d", actions=True)
+
+        core_logger.log(level=logging.INFO,
+                        msg="Downloading historical data from %s to %s every 1d for the following securities: %s"
+                            % (self._start, self._end, self.securities))
 
         return data
 
@@ -34,7 +33,7 @@ class Financial_Data:
         dividends = self._data.drop(columns=["Close", "Adj Close", "Open", "High", "Low", "Volume", "Stock Splits"])
 
         if len(self.securities) > 1:
-            dividends = dividends.droplevel(0,axis=1)
+            dividends = dividends.droplevel(0, axis=1)
 
         else:
             dividends.rename(columns={"Dividends": self.securities[0]}, inplace=True)
@@ -44,7 +43,7 @@ class Financial_Data:
         return dividends.astype('float64')
 
     def _get_prices(self):
-        prices = self._data.drop(columns=["Adj Close", "Open", "High", "Low", "Volume", "Stock Splits", "Dividends"]) \
+        prices = self._data.drop(columns=["Adj Close", "Open", "High", "Low", "Volume", "Stock Splits", "Dividends"])
 
         if len(self.securities) > 1:
             prices = prices.droplevel(0, axis=1)
@@ -55,7 +54,7 @@ class Financial_Data:
 
 
 # noinspection PyBroadException
-class Ticker_Data:
+class TickerData:
 
     def __init__(self, ticker):
         self.ticker = ticker
@@ -83,6 +82,9 @@ class Ticker_Data:
         self.healthcare = self._get_healthcare_position()
 
     def _download_data(self):
+        core_logger.log(level=logging.INFO,
+                        msg="Downloading qualitative data for the following securities: %s"
+                            % self.ticker)
         return yq.Ticker(self.ticker)
 
     def _get_quote_type(self):
