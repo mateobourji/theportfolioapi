@@ -52,3 +52,8 @@ DATABASE_URL = config(
   cast=DatabaseURL,
   default=f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
+
+REDIS_PASSWORD = config("REDIS_PASSWORD", cast=str)
+REDIS_SERVER= config("REDIS_SERVER", cast=int)
+REDIS_PORT= config("REDIS_PORT", cast=int)
+REDIS_HOST= config("REDIS_HOST", cast=str)

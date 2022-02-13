@@ -5,7 +5,9 @@ from app.api.routes import router as api_router
 from app.services.logger import logger
 import logging
 import json
+import redis
 
+r = redis.Redis(host='theportfolioapi_cache_1', password="sOmE_sEcUrE_pAsS", port=6379, db=0)
 
 def get_application() -> FastAPI:
     app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION, description=config.DESCRIPTION,
@@ -32,6 +34,7 @@ app = get_application()
 @app.middleware("http")
 async def log_request_and_response(request: Request, call_next):
     client = request.client.host
+
     endpoint_logger.log(level=logging.INFO,
                         msg="REQUEST - %s - %s - CLIENT: %s - BODY: %s" % (request.scope['path'],
                                                                            request.scope['method'],

@@ -10,7 +10,7 @@ services:
     env_file:
       - ./backend/.env
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - db
   db:
@@ -20,6 +20,20 @@ services:
     env_file:
       - ./backend/.env
     ports:
-      - 5432:5432
+      - "5432:5432"
+  cache:
+    image: "redis:latest"
+    command: redis-server --requirepass sOmE_sEcUrE_pAsS
+    ports:
+      - "6379:6379"
+    volumes:
+      - $PWD/redis-data:/var/lib/redis
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
 volumes:
     postgres_data:
+
+
