@@ -1,15 +1,9 @@
 
-# The Portfolio API  (www.theportfolioapi.com)
+# The Portfolio API 
 
 The Portfolio (REST) API is for wealth advisers and personal investors to screen investments across multiple asset classes, generate quantitative and qualitative analyses of these assets, and construct optimised investment portfolios.
 
 
-## API Documentation
-
-[Swagger Format Documentation](www.theportfolioapi.com)
-
-[ReDoc Format Documentation](www.theportfolioapi.com/docs)
-  
 ## Usage/Examples
 
 Register as a new user:
